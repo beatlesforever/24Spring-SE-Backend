@@ -1,4 +1,0 @@
--- 插入房间样例数据
-INSERT INTO room (room_id, current_temperature, target_temperature, min_temperature, max_temperature, temperature_threshold, status, mode, last_update, connected) VALUES
-                                                                                                                                                                       (101, 23.0, 25.0, 20.0, 28.0, 1.0, 'on', 'cooling', CURRENT_TIMESTAMP, TRUE),
-                                                                                                                                                                       (102, 19.0, 22.0, 18.0, 25.0, 1.0, 'off', 'cooling', CURRENT_TIMESTAMP, FALSE);
