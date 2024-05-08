@@ -24,7 +24,11 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.4.3.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.21</version>  <!-- 确保版本号正确填写在这里 -->
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -49,11 +53,6 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>8.0.28</version> <!-- 使用适合你MySQL服务器版本的驱动版本 -->
             </dependency>
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
