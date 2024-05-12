@@ -26,4 +26,5 @@ public class ControlLog {
     private LocalDateTime responseTime;  // 响应时间，系统处理请求并开始调节的时间
     private LocalDateTime endTime;  // 调节结束时间，系统完成调节的时间
     private Integer duration;  // 调节持续的时间（秒），可用于后续的能耗计算
+    private boolean isCompleted;  // 是否完成
 }
