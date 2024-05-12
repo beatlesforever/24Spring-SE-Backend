@@ -1,14 +1,14 @@
 package com.example.sebackend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.sebackend.entity.TemperatureControlLog;
+import com.example.sebackend.entity.ControlLog;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
  * @author zhouhaoran
- * @date 2024/5/8
+ * @date 2024/5/12
  * @project SE-backend
  */
 @Mapper
-public interface TemperatureControlLogMapper extends BaseMapper<TemperatureControlLog> {
+public interface ControlLogMapper extends BaseMapper<ControlLog> {
 }

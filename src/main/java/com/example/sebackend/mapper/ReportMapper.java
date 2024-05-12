@@ -1,7 +1,6 @@
 package com.example.sebackend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.sebackend.entity.EnergyConsumption;
 import com.example.sebackend.entity.Report;
 import org.apache.ibatis.annotations.Mapper;
 

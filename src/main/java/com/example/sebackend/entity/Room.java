@@ -21,13 +21,15 @@ import java.time.LocalDateTime;
 public class Room {
     @TableId(type = IdType.AUTO)
     private Integer roomId;  // 房间的唯一标识符
-    private Float currentTemperature;  // 房间当前的实际温度
+    private Float currentTemperature;  // 房间当前的温度
     private Float targetTemperature;  // 房间设定的目标温度
-    private Float minTemperature;  // 温度下限，用于自动控制重新启动温控机制
-    private Float maxTemperature;  // 温度上限，用于自动控制重新启动温控机制
-    private Float temperatureThreshold;  // 温度变化阈值，用于判断是否触发重启或调整
-    private String status;  // 房间的当前状态（'on', 'off', 'standby'）
-    private String mode;  // 当前的工作模式（'heating' or 'cooling'）
+    private String fanSpeed;  // 当前风速设置 ('high', 'medium', 'low')
+    private Float temperatureThreshold;  // 温度变化阈值，用于自动重启
+    private String status;  // 房间的当前状态 ('on', 'off', 'standby')
+    private String mode;  // 当前工作模式 ('heating', 'cooling')
     private LocalDateTime lastUpdate;  // 最后一次状态更新时间
-    private Boolean connected;  // 表示房间是否与中央空调系统连接
+    private String serviceStatus;  // 服务状态 ('waiting', 'serving', 'completed')
+    private Integer userId;  // 关联的用户ID
+    private Float energyConsumed;  // 房间消耗的能量（能量单位）
+    private Float costAccumulated;  // 房间累计的费用
 }

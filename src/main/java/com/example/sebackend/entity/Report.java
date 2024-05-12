@@ -22,7 +22,10 @@ import java.time.LocalDateTime;
 public class Report {
     @TableId(type = IdType.AUTO)
     private Integer reportId;  // 报告的唯一标识符
-    private String type;  // 报告类型，使用枚举类型限定值（'daily', 'weekly', 'monthly'）
+    private String type;  // 报告类型 ('daily', 'weekly', 'monthly')
     private LocalDateTime generationDate;  // 报告生成日期
-    private String details;  // 报告的详细内容，可能包含JSON格式的数据
+    private Float totalEnergyConsumed;  // 报告期间总能量消耗
+    private Float totalCost;  // 报告期间总费用
+    private String details;  // 报告的详细内容
+    private String creator;  // 报告生成者
 }

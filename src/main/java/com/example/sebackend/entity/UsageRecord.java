@@ -25,7 +25,6 @@ public class UsageRecord {
     private Integer roomId;  // 关联的房间编号
     private LocalDateTime startTime;  // 使用开始的时间
     private LocalDateTime endTime;  // 使用结束的时间
-    private BigDecimal cost;  // 该次使用的计费金额
-    private String fanSpeed;  // 风速设置，如 'high', 'medium', 'low'
-    private Float temperatureChange;  // 使用期间的温度变化
+    private Float totalEnergyConsumed;  // 总能量消耗量
+    private Float cost;  // 该次使用的计费金额
 }
