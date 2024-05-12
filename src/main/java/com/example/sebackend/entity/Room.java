@@ -29,7 +29,6 @@ public class Room {
     private String mode;  // 当前工作模式 ('heating', 'cooling')
     private LocalDateTime lastUpdate;  // 最后一次状态更新时间
     private String serviceStatus;  // 服务状态 ('waiting', 'serving', 'completed')
-    private Integer userId;  // 关联的用户ID
     private Float energyConsumed;  // 房间消耗的能量（能量单位）
     private Float costAccumulated;  // 房间累计的费用
 }
