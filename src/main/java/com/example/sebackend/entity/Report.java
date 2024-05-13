@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 public class Report {
     @TableId(type = IdType.AUTO)
     private Integer reportId;  // 报告的唯一标识符
+    private Integer roomId;  // 关联的房间编号
     private String type;  // 报告类型 ('daily', 'weekly', 'monthly')
     private LocalDateTime generationDate;  // 报告生成日期
     private Float totalEnergyConsumed;  // 报告期间总能量消耗
