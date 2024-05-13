@@ -27,4 +27,28 @@ public class ControlLog {
     private LocalDateTime endTime;  // 调节结束时间，系统完成调节的时间
     private Integer duration;  // 调节持续的时间（秒），可用于后续的能耗计算
     private boolean isCompleted;  // 是否完成
+
+
+    public float getCost(){
+        //计算费用
+        //一个单位能耗的费用为5元
+        float cost = getEnergyConsumed() * 5;
+        return cost;
+    }
+
+    public float getEnergyConsumed(){
+        //计算能耗
+        //风速为high时，能耗为1.2倍，medium时为1倍，low时为0.8倍
+        //把持续时间转化为分钟
+        Float durationMinute = (float) (duration / 60);
+        float energyConsumed = 0;
+        if (requestedFanSpeed.equals("high")){
+            energyConsumed = (float) (durationMinute * 1.2);
+        }else if (requestedFanSpeed.equals("medium")){
+            energyConsumed = durationMinute;
+        }else if (requestedFanSpeed.equals("low")){
+            energyConsumed = (float) (durationMinute * 0.8);
+        }
+        return energyConsumed;
+    }
 }
