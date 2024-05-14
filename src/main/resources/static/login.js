@@ -25,29 +25,30 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
         body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(data => {
-        console.log('Login response:', data);
-        // 根据后端返回的信息处理登录结果
-        if (data.message === "登录成功") {
-            // 存储用户名和令牌为全局变量
-            globalrole = data.role;
-            globalToken = data.token;
+    .then(responseData => {
+        // 这里使用 responseData.data 来访问返回的数据
+        console.log('Login response:', responseData);
+        if (responseData.message === "登录成功") {
+            globalrole = responseData.data.role;
+            globalToken = responseData.data.token;
+            console.log('Token:', globalToken);
             localStorage.setItem('token', globalToken);
-            if (data.role === "admin") {
+            localStorage.setItem('roomId', room);
+            if (responseData.data.role === "admin") {
                 window.location.href = 'admin.html';
             } else {
                 window.location.href = 'user.html';
             }
-        } else if (data.message === "房间号不匹配") {
-            alert('Room number does not match. Please check your room number.');
-        } else if (data.message === "用户名或密码错误") {
-            alert('Invalid username or password. Please try again.');
+        } else if (responseData.message === "房间号不匹配") {
+            alert('房间号不匹配，请检查你的房间号.');
+        } else if (responseData.message === "用户名或密码错误") {
+            alert('用户名或密码错误，请重试.');
         } else {
-            console.error('Unknown message from server:', data.message);
+            console.error('未知错误:', responseData.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Login failed. Please try again.');
+        alert('登陆失败，请重试.');
     });
 });

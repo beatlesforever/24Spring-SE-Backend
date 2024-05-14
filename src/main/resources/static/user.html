@@ -3,16 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room Information</title>
+    <title>房间信息</title>
 </head>
 <body>
-    <h1>Room Information</h1>
-    <label for="roomIdInput">Enter Room ID:</label>
-    <input type="text" id="roomIdInput">
-    <button onclick="getRoomInfo()">Get Info</button>
+<h1>房间信息</h1>
 
-    <div id="roomInfo"></div>
+<!-- 显示房间信息的div -->
+<div id="roomInfo"></div>
 
-    <script src="user.js"></script>
+<!-- 在页面加载时自动获取房间信息 -->
+<script>
+    window.onload = function() {
+        var roomId = localStorage.getItem('roomId');
+        if (roomId) {
+            getRoomInfo(roomId); // 自动发送请求获取房间信息
+        }
+    };
+
+    function getRoomInfo(roomId) {
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                'Content-Type': 'application/json'
+            }
+        };
+
+        fetch('/api/rooms/' + roomId, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "200 OK") {
+                    displayRoomInfo(data.data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while fetching room information.");
+            });
+    }
+
+    function displayRoomInfo(roomData) {
+        const roomInfoDiv = document.getElementById('roomInfo');
+        roomInfoDiv.innerHTML = `
+                <h2>房间号: ${roomData.roomId}</h2>
+                <p>当前温度: ${roomData.currentTemperature}</p>
+                <p>目标温度: ${roomData.targetTemperature}</p>
+                <p>风速: ${roomData.fanSpeed}</p>
+                <p>温度阈值: ${roomData.temperatureThreshold}</p>
+                <p>当前状态: ${roomData.status}</p>
+                <p>模式: ${roomData.mode}</p>
+                <p>最后更新: ${roomData.lastUpdate}</p>
+                <p>服务状态: ${roomData.serviceStatus}</p>
+                <p>能量消耗: ${roomData.energyConsumed}</p>
+                <p>总计消费: ${roomData.costAccumulated}</p>
+            `;
+    }
+</script>
 </body>
 </html>
