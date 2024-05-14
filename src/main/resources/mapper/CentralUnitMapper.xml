@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sebackend.mapper.CentralUnitMapper">
+
+    <update id="update" parameterType="com.example.sebackend.entity.CentralUnit">
+        update central_unit
+        <set>
+            <if test="mode != null "> mode = #{mode}, </if>
+            <if test="status != null "> status = #{status}, </if>
+<!--            default_temperature-->
+            <if test="defaultTemperature != null "> default_temperature = #{defaultTemperature}, </if>
+<!--            capacity-->
+            <if test="capacity != null "> capacity = #{capacity}, </if>
+<!--            max_temperature-->
+            <if test="maxTemperature != null "> max_temperature = #{maxTemperature}, </if>
+<!--            min_temperature-->
+            <if test="minTemperature != null "> min_temperature = #{minTemperature}, </if>
+<!--            current_temperature-->
+            <if test="currentTemperature != null "> current_temperature = #{currentTemperature}, </if>
+<!--            active_units-->
+            <if test="activeUnits != null "> active_units = #{activeUnits}, </if>
+        </set>
+        where unit_id = #{unitId}
+    </update>
+
+
+</mapper>

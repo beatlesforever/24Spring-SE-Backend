@@ -3,6 +3,9 @@ package com.example.sebackend.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.sebackend.entity.Room;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * @author zhouhaoran
@@ -11,4 +14,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface RoomMapper extends BaseMapper<Room> {
+    @Select("select * from room where room.room_id = #{roomId}")
+    Room getId(int roomId);
+    //更新房间信
+
+    void update(@Param("room") Room room);
 }
