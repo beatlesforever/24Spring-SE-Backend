@@ -30,7 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // 禁用跨站请求伪造（CSRF）保护
         http.csrf().disable()
                 // 对静态资源、登录和注册页面的访问进行许可，无需认证即可访问
-                .authorizeRequests().antMatchers("/*.html", "/*.css","/*.js","/api/users/login", "/api/users/register").permitAll()
+                .authorizeRequests().antMatchers("/*.html", "/*.css","/*.js","/login", "/home","/api/users/login", "/api/users/register").permitAll()
                 // 对其他所有请求进行认证，即只有经过认证的用户才能访问
                 .anyRequest().authenticated()
                 .and()
