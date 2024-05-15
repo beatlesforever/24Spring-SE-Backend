@@ -29,8 +29,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // 禁用跨站请求伪造（CSRF）保护
         http.csrf().disable()
-                // 对"/api/login"和"/api/register"这两个URL的访问进行许可，无需认证即可访问
-                .authorizeRequests().antMatchers("/api/users/login", "/api/users/register").permitAll()
+                // 对静态资源、登录和注册页面的访问进行许可，无需认证即可访问
+                .authorizeRequests().antMatchers("/*.html", "/*.css","/*.js","/login", "/home","/api/users/login", "/api/users/register").permitAll()
                 // 对其他所有请求进行认证，即只有经过认证的用户才能访问
                 .anyRequest().authenticated()
                 .and()
