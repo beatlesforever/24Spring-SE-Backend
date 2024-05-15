@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 /**
  * @author zhouhaoran
  * @date 2024/5/8
@@ -18,5 +20,7 @@ public interface RoomMapper extends BaseMapper<Room> {
     Room getId(int roomId);
     //更新房间信
 
-    void update(@Param("room") Room room);
+    void update( Room room);
+
+    List<Room> list();
 }

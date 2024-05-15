@@ -27,5 +27,7 @@ public class CentralUnit {
     private String status;  // 中央空调的状态 ('on', 'off', 'standby')
     private Integer capacity;  // 同时处理的最大从控机数量
     private Integer activeUnits;  // 正在服务的从控机数量
+    private Integer frequency;  //刷新频率
+
 }
 

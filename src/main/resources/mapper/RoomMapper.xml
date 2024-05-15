@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sebackend.mapper.RoomMapper">
+
+
+    <update id="update" parameterType="com.example.sebackend.entity.Room">
+<!--        更新房间信息-->
+        update room
+        <set>
+            <if test="currentTemperature != null">
+             current_temperature = #{currentTemperature},
+            </if>
+            <if test="targetTemperature != null">
+                 target_temperature = #{targetTemperature},
+            </if>
+        <if test="fanSpeed != null">
+                 fan_speed = #{fanSpeed},
+            </if>
+<!--            temperature_threshold-->
+            <if test="temperatureThreshold != null">
+                 temperature_threshold = #{temperatureThreshold},
+            </if>
+        <if test="mode != null">
+                 mode = #{mode},
+            </if>
+        <if test="status != null">
+                 status = #{status},
+            </if>
+<!--        last_update-->
+            <if test="lastUpdate != null">
+                 last_update = #{lastUpdate},
+            </if>
+<!--            service_status-->
+            <if test="serviceStatus != null">
+                 service_status = #{serviceStatus},
+            </if>
+<!--            energy_consumed-->
+            <if test="energyConsumed != null">
+                 energy_consumed = #{energyConsumed},
+            </if>
+<!--            cost_accumulated-->
+            <if test="costAccumulated != null">
+                 cost_accumulated = #{costAccumulated},
+            </if>
+        </set>
+        where room_id = #{roomId}
+    </update>
+
+    <select id="list" resultType="com.example.sebackend.entity.Room">
+<!--        查询所有房间信息-->
+        select * from room
+    </select>
+</mapper>
