@@ -8,10 +8,12 @@ package com.example.sebackend.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 @Component
+@Slf4j
 public class JwtUtil {
     private static final String SECRET_KEY = "can_you_guess_key";
 
@@ -44,6 +46,7 @@ public class JwtUtil {
      */
     public static Claims extractClaims(String token) {
         // 使用JWT解析器并设置签名密钥，然后解析令牌为Claims
+//        log.info("token: " + token);
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
@@ -60,7 +63,6 @@ public class JwtUtil {
         // 从令牌中提取声明，并返回主题（用户名）
         return extractClaims(token).getSubject();
     }
-
     /**
      * 判断令牌（token）是否已过期。
      *

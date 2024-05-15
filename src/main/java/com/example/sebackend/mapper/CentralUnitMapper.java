@@ -21,4 +21,7 @@ public interface CentralUnitMapper extends BaseMapper<CentralUnit> {
     //更新中央空调
 
     void update(CentralUnit centralUnit);
+
+    @Update("update central_unit set frequency = #{frequency}")//只有一个中央空调
+    void updateFrequency(int frequency);
 }

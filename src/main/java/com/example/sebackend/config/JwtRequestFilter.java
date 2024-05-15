@@ -1,6 +1,10 @@
 package com.example.sebackend.config;
 
+import com.example.sebackend.context.BaseContext;
 import com.example.sebackend.service.IUserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,12 +12,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author zhouhaoran
@@ -21,6 +27,8 @@ import java.io.IOException;
  * @project SE-backend
  */
 @Component
+@Slf4j
+
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -49,8 +57,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // 解析JWT并验证
         String username = null;
+        String roomId = null;
+
         String jwt = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            log.info("JWT认证：{}", authorizationHeader);
             jwt = authorizationHeader.substring(7); // 从Authorization头中提取JWT
             username = JwtUtil.extractUsername(jwt); // 从JWT中解析出用户名
         }
@@ -59,6 +70,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // 加载用户信息
             UserDetails userDetails = this.userService.loadUserByUsername(username);
+            // 将当前用户的id存入ThreadLocal
+            BaseContext.setCurrentUser(username);
+            log.info("当前用户：{}", username);
             // 创建新的认证token，包含权限信息
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -69,9 +83,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         }
 
+        log.info("JWT认证：过滤器链继续");
         // 继续执行过滤器链
         chain.doFilter(request, response);
     }
+
+
+
 
 
 }

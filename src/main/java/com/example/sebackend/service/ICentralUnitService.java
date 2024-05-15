@@ -2,7 +2,9 @@ package com.example.sebackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.sebackend.entity.CentralUnit;
-import com.example.sebackend.entity.User;
+import com.example.sebackend.entity.Room;
+
+import java.util.List;
 
 /**
  * @author zhouhaoran
@@ -10,9 +12,15 @@ import com.example.sebackend.entity.User;
  * @project SE-backend
  */
 public interface ICentralUnitService extends IService<CentralUnit> {
+     int fulfill(float targetTemperature, String targetSpeed);
+
     CentralUnit turnOn();
 
     CentralUnit turnOff();
 
-    CentralUnit authen(User user);
+    CentralUnit authen();
+
+    List<Room> getStatus();
+
+    CentralUnit uodateFrequency(int frequency);
 }
