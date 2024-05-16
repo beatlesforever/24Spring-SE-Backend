@@ -3,7 +3,6 @@ package com.example.sebackend.schedule;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.ICentralUnitService;
-import com.example.sebackend.service.IEnvironmentTemperatureService;
 import com.example.sebackend.service.IRoomService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +45,12 @@ public class ScheduleTask {
         float defaultTemperature = (mode.equals("cooling")) ? 22.0f : 28.0f;
         centralUnitService.setMode(mode);
         centralUnitService.segfaultTemperature(defaultTemperature);
-        System.out.print("执行modifyCentralAirConditionerSettings");
+        System.out.println("执行modifyCentralAirConditionerSettings");
     }
 
     //从控机机工作状态下,房间的温度变化调整
     @Async
-    @Scheduled(fixedRate = 10000) // Execute every minute
+    @Scheduled(fixedRate = 60000) // Execute every minute
     public void adjustRoomTemperature() {
         //定时任务,一分钟,高速变化0.6,中速变化0.5,低速变化0.4-多线程
         //
@@ -65,7 +64,7 @@ public class ScheduleTask {
         // 根据风速将energyConsumed(+0.8,1,1.2),
         // 重新计算costAccumulated,并写入(5元/一个标准功率),
         // 判断当前温度和目标温度相同,将房间空调设置成standby模式;
-        System.out.printf("adjustRoomTemperature");
+        System.out.println("adjustRoomTemperature");
         List<Room> rooms = roomService.list();
         for (Room room : rooms) {
             final int roomId = room.getRoomId();

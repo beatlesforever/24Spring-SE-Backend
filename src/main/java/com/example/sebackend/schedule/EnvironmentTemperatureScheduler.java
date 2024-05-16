@@ -1,8 +1,10 @@
 package com.example.sebackend.schedule;
 
 import com.example.sebackend.context.EnvironmentConstant;
+import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.EnvironmentTemperature;
 import com.example.sebackend.entity.Room;
+import com.example.sebackend.service.ICentralUnitService;
 import com.example.sebackend.service.IEnvironmentTemperatureService;
 import com.example.sebackend.service.IRoomService;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,28 +29,54 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     @Autowired
     private IRoomService roomService;
 
+    @Autowired
+    private ICentralUnitService centralUnitService;
     private float currentTemperature;
     private boolean isSummerSeason;
 
+    /**
+     * 当组件属性设置完成后执行的初始化操作。
+     * 该方法不接受参数，也不返回任何值。
+     * 主要完成以下初始化工作：
+     * 1. 初始化季节和温度设置。
+     * 2. 将所有房间重置为默认状态。
+     * 3. 将所有中央单元重置为默认状态。
+     */
     @Override
     public void afterPropertiesSet() {
-        // 组件初始化时设置初始温度
+        // 初始化季节和温度
         initializeSeasonAndTemperature();
+        // 重置所有房间为默认状态
         resetAllRoomsToDefaultState();
-
+        // 重置所有中央单元为默认状态
+        resetAllCentralUnitsToDefaultState();
     }
+
 
     private void initializeSeasonAndTemperature() {
         int month = LocalDate.now().getMonthValue();
+        LocalTime now = LocalTime.now();
+        int hour = now.getHour();
+
         if (month >= 4 && month <= 9) { // 夏季月份4月到9月
             isSummerSeason = true;
-            currentTemperature = 20.0f; // 夏季初始温度
+            // 判断当前时间是否在白天
+            if (hour >= 6 && hour < 18) {
+                currentTemperature = 20.0f; // 夏季白天起始温度
+            } else {
+                currentTemperature = 35.0f; // 夏季夜晚起始温度
+            }
         } else { // 冬季月份10月到3月
             isSummerSeason = false;
-            currentTemperature = -5.0f; // 冬季初始温度
+            // 判断当前时间是否在白天
+            if (hour >= 6 && hour < 18) {
+                currentTemperature = -5.0f; // 冬季白天起始温度
+            } else {
+                currentTemperature = 10.0f; // 冬季夜晚起始温度
+            }
         }
-        // 同步更新全局环境温度常量
         EnvironmentConstant.environmentTemperature = currentTemperature;
+
     }
 
     /**
@@ -65,12 +93,31 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             // 设置当前温度和目标温度为环境温度
             room.setCurrentTemperature(EnvironmentConstant.environmentTemperature);
             room.setTargetTemperature(EnvironmentConstant.environmentTemperature);
+            room.setFanSpeed("medium");
             // 设置房间状态为"off"
             room.setStatus("off");
             // 更新房间信息到数据库
             roomService.updateById(room);
         }
     }
+
+    /**
+     * 重置所有中心单元至默认状态
+     * 该方法遍历所有中心单元，并将它们的状态设置为"off"，然后更新到数据库。
+     * 注意：此方法没有参数，也没有返回值。
+     */
+    private void resetAllCentralUnitsToDefaultState() {
+        // 从中央单元服务获取所有中央单元的列表
+        List<CentralUnit> units = centralUnitService.list();
+
+        // 遍历列表，将每个单元的状态设置为"off"，并更新到数据库
+        units.forEach(unit -> {
+            unit.setStatus("off");
+            centralUnitService.updateById(unit);
+        });
+    }
+
+
 
     @Scheduled(cron = "0 0 0 1 4 ?") // 4月1日凌晨0点开始夏季
     public void startSummerSeason() {
@@ -99,7 +146,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         LocalTime now = LocalTime.now(); // 获取当前时间
         int hour = now.getHour(); // 获取当前小时数
         float temperatureChange = 0.1f; // 每分钟温度变化量
-
+        System.out.println("环境温度为: " + currentTemperature);
         // 根据季节调整温度
         if (isSummerSeason) {
             // 夏季温度变化逻辑
