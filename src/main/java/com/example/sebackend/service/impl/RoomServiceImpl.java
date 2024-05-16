@@ -1,7 +1,6 @@
 package com.example.sebackend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.sebackend.context.EnvironmentConstant;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.service.IRoomService;
@@ -28,21 +27,24 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     public RoomServiceImpl(ConcurrentHashMap<Integer, Room> roomMap) {
         this.roomMap = roomMap;
     }
-    //添加房间的请求信息
-    public void addRoom(int key, Room room) {
-        roomMap.put(key, room);
-    }
-    //获取请求的房间号
-    public Room getRoom(int key) {
-        return roomMap.get(key);
-    }
-    //删除房间的请求信息
-    public Room removeRoom(int key) {
-        return roomMap.remove(key);
-    }
     //判断房间的请求信息是否存在
     public boolean containsRoom(int key) {
         return roomMap.containsKey(key);
+    }
+
+    //获取优先级最高的请求
+    public Room current_userRoom() {
+        Room room = null;
+        for (Room value : roomMap.values()) {
+//            if (room == null) {
+//                room = value;
+//            } else {
+//                if (room.getPriority() < value.getPriority()) {
+//                    room = value;
+//                }
+//            }
+        }
+        return room;
     }
 
     @Override

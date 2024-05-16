@@ -1,6 +1,7 @@
 package com.example.sebackend.controller;
 
 import com.example.sebackend.entity.CentralUnit;
+import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.entity.User;
 import com.example.sebackend.service.ICentralUnitService;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -78,18 +80,21 @@ public class CentralUnitController {
     @PostMapping("/authen")
     public ResponseEntity<Map<String, Object>> authen() {
         log.info("从控机认证");
-        CentralUnit centralUnit = centralUnitService.authen();
+        CentralUnit centralUnit = centralUnitService.getById(1);
         if (Objects.equals(centralUnit.getStatus(), "off")) {
             return createResponse(HttpStatus.BAD_REQUEST, "中央空调未开启", null);
+        } else {
+            centralUnit = centralUnitService.authen();
         }
         return createResponse(HttpStatus.OK, "认证成功", centralUnit);
     }
 
     /**
-     *中央空调获取从控机状态
+     * 中央空调获取从控机状态
      * todo:主控机实时监测从控机
      * > 使用websocket实现
      * > 配置刷新频率
+     *
      * @return ResponseEntity<Map < String, Object>>
      */
     @GetMapping("/status")
@@ -100,11 +105,12 @@ public class CentralUnitController {
     }
 
     //设置刷新频率,单位为秒
+
     /**
-    *@InterfaceName: 设置刷新频率
-    *@Description: 设置刷新频率
-    *@Author: suny
-    */
+     * @InterfaceName: 设置刷新频率
+     * @Description: 设置刷新频率
+     * @Author: suny
+     */
 
     @GetMapping("/frequency")
     public ResponseEntity<Map<String, Object>> setFrequency(@RequestParam int frequency) {
@@ -119,22 +125,30 @@ public class CentralUnitController {
       发送送风请求(目标温度,和当前的风速模式,默认是中风,在房间创建的时候设置),
       后端判断合理后,设置属性(目标温度,服务状态为waiting)
      */
+
     /**
-     *从控机修改风速模式请求后,加入判断(中央空调是否开启),发送送风请求,
+     * 从控机修改风速模式请求后,加入判断(中央空调是否开启),发送送风请求,
      * 后端判断合理之后,修改房间对应属性(风速模式,服务状态为waiting)并保存到数据库中,
      * 将请求加入到等待队列,并将之前的同一房间的等待中的请求删除队列
      */
+
     @GetMapping("/requests")
+    @SendTo("/air/requestServing")
     public ResponseEntity<Map<String, Object>> getRequests(@RequestParam float targetTemperature, @RequestParam String fanSpeed) {
         log.info("中央空调接收请求");
-//        List<Room> rooms = centralUnitService.getRequests();
-        return createResponse(HttpStatus.OK, "发送请求成功", null);
+        //从控机修改目标温度
+        Response re = centralUnitService.requests(targetTemperature, fanSpeed);
+        Room room = (Room) re.getData();
+        if (Objects.equals(re.getCode(), 403)) {
+            return createResponse(HttpStatus.BAD_REQUEST, "中央空调已关机", room);
+        } else if (Objects.equals(re.getCode(), 404)) {
+            return createResponse(HttpStatus.BAD_REQUEST, "目标温度设置不合理", room);
+        }  else {
+            return createResponse(HttpStatus.OK, "服务已完成", room);
+        }
     }
 
     //todo
-
-
-
 
 
 }

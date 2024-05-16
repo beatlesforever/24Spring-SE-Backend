@@ -13,4 +13,6 @@ public interface IRoomService extends IService<Room> {
     void updateRoom(Room room);
 
     void updateRoomTemperatures(float newTemperature);
+
+    Room current_userRoom();
 }
