@@ -1,5 +1,6 @@
 package com.example.sebackend.controller;
 
+import com.example.sebackend.context.EnvironmentConstant;
 import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.entity.User;
@@ -77,9 +78,13 @@ public class RoomController {
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createRoom() {
         Room room = new Room();
+
+        // 使用环境温度常量作为初始温度
+        float initialTemperature = EnvironmentConstant.environmentTemperature != null ? EnvironmentConstant.environmentTemperature : 20.0f; // 如果常量为null, 使用默认值
+
         // 初始化房间属性为默认值
-        room.setCurrentTemperature(20.0f);  // 设置默认当前温度
-        room.setTargetTemperature(20.0f);  // 设置默认目标温度
+        room.setCurrentTemperature(initialTemperature);  // 使用环境温度常量
+        room.setTargetTemperature(initialTemperature);  // 目标温度也设置为当前环境温度
         room.setFanSpeed("medium");  // 设置默认风速
         room.setTemperatureThreshold(1.0f);  // 设置默认温度阈值
         room.setStatus("off");  // 设置默认状态为关闭
@@ -97,7 +102,6 @@ public class RoomController {
 
     /**
      * 获取所有没有用户的空房间
-     *
      * 本方法不接受任何参数，返回所有未被用户占用的房间列表。
      *
      * @return ResponseEntity<Map<String, Object>> 包含房间列表的HTTP响应实体，

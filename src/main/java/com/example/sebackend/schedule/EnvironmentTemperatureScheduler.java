@@ -1,6 +1,8 @@
-package com.example.sebackend.context;
+package com.example.sebackend.schedule;
 
+import com.example.sebackend.context.EnvironmentConstant;
 import com.example.sebackend.entity.EnvironmentTemperature;
+import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.IEnvironmentTemperatureService;
 import com.example.sebackend.service.IRoomService;
 import org.springframework.beans.factory.InitializingBean;
@@ -10,14 +12,13 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Random;
+import java.util.List;
 
 /**
  * @author zhouhaoran
  * @date 2024/5/16
  * @project SE-backend
  */
-
 @Component
 public class EnvironmentTemperatureScheduler implements InitializingBean {
     @Autowired
@@ -33,6 +34,8 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     public void afterPropertiesSet() {
         // 组件初始化时设置初始温度
         initializeSeasonAndTemperature();
+        resetAllRoomsToDefaultState();
+
     }
 
     private void initializeSeasonAndTemperature() {
@@ -44,18 +47,45 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             isSummerSeason = false;
             currentTemperature = -5.0f; // 冬季初始温度
         }
+        // 同步更新全局环境温度常量
+        EnvironmentConstant.environmentTemperature = currentTemperature;
+    }
+
+    /**
+     * 重置所有房间到默认状态
+     * 该方法会将所有房间的当前温度、目标温度设置为环境温度，并将房间状态设置为"off"，然后更新到数据库。
+     * 注意：该方法不接受任何参数，也没有返回值。
+     */
+    private void resetAllRoomsToDefaultState() {
+        // 获取所有房间列表
+        List<Room> rooms = roomService.list();
+
+        // 遍历房间列表，重置每个房间的状态
+        for (Room room : rooms) {
+            // 设置当前温度和目标温度为环境温度
+            room.setCurrentTemperature(EnvironmentConstant.environmentTemperature);
+            room.setTargetTemperature(EnvironmentConstant.environmentTemperature);
+            // 设置房间状态为"off"
+            room.setStatus("off");
+            // 更新房间信息到数据库
+            roomService.updateById(room);
+        }
     }
 
     @Scheduled(cron = "0 0 0 1 4 ?") // 4月1日凌晨0点开始夏季
     public void startSummerSeason() {
         isSummerSeason = true;
         currentTemperature = 20.0f; // 设置夏季起始温度
+        // 同步更新全局环境温度常量
+        EnvironmentConstant.environmentTemperature = currentTemperature;
     }
 
     @Scheduled(cron = "0 0 0 1 10 ?") // 10月1日凌晨0点开始冬季
     public void startWinterSeason() {
         isSummerSeason = false;
         currentTemperature = -5.0f; // 设置冬季起始温度
+        // 同步更新全局环境温度常量
+        EnvironmentConstant.environmentTemperature = currentTemperature;
     }
 
     /**
@@ -83,9 +113,13 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             currentTemperature = Math.min(Math.max(currentTemperature, -5.0f), 10.0f);
         }
 
-        // 创建新的环境温度对象，并设置当前温度值
+        // 同步更新全局环境温度常量
+        EnvironmentConstant.environmentTemperature = currentTemperature;
+
+        // 创建并保存环境温度记录
         EnvironmentTemperature environmentTemperature = new EnvironmentTemperature();
         environmentTemperature.setTemperature(currentTemperature);
+
         // 保存环境温度
         environmentTemperatureService.save(environmentTemperature);
         // 更新所有房间的温度
@@ -93,3 +127,4 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     }
 
 }
+

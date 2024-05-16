@@ -1,11 +1,14 @@
 package com.example.sebackend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.sebackend.context.EnvironmentConstant;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.service.IRoomService;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @project SE-backend
  */
 @Service
-public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IRoomService {
+public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IRoomService{
     @Autowired
     private final ConcurrentHashMap<Integer,Room> roomMap;
     @Autowired
@@ -82,9 +85,6 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
             }
         }
     }
-
-
-
 
 
 }

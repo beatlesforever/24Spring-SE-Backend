@@ -5,7 +5,7 @@ package com.example.sebackend.context;
  */
 public class EnvironmentConstant {
 
-    //环境温度,冬季10度,其他季节25度
-    public static Float environmentTemperature = 10.0f;
+    //环境温度
+    public static Float environmentTemperature;
 
-    }
+}
