@@ -57,7 +57,6 @@ public class UserController {
         }
     }
 
-
     /**
      * 处理用户注册请求。
      *
@@ -84,8 +83,9 @@ public class UserController {
             data.put("role", user.getRole());
             return createResponse(HttpStatus.OK, "用户注册成功", data);
         } else {
-// 注册失败，返回错误状态码和相应的消息
+            // 注册失败，返回错误状态码和相应的消息
             return createResponse(HttpStatus.BAD_REQUEST, "注册失败，用户名可能已存在", null);
         }
     }
+
 }
