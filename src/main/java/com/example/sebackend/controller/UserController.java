@@ -57,7 +57,6 @@ public class UserController {
         }
     }
 
-
     /**
      * 处理用户注册请求。
      *
@@ -66,6 +65,13 @@ public class UserController {
      */
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
+        // 检查房间是否已经被占用
+        User existingUser = userService.getUserByRoomId(user.getRoomId());
+        if (existingUser != null) {
+            // 房间已被占用，返回错误状态码和相应的消息
+            return createResponse(HttpStatus.BAD_REQUEST, "注册失败，该房间已被占用", null);
+        }
+
         // 尝试注册用户
         boolean success = userService.register(user);
         if (success) {
@@ -77,8 +83,9 @@ public class UserController {
             data.put("role", user.getRole());
             return createResponse(HttpStatus.OK, "用户注册成功", data);
         } else {
-// 注册失败，返回错误状态码和相应的消息
+            // 注册失败，返回错误状态码和相应的消息
             return createResponse(HttpStatus.BAD_REQUEST, "注册失败，用户名可能已存在", null);
         }
     }
+
 }

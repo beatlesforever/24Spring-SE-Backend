@@ -91,5 +91,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .build();
     }
 
-
+    /**
+     * 根据房间ID获取用户信息。
+     *
+     * @param roomId 房间ID，用于查询与之关联的用户信息。
+     * @return 返回查询到的用户对象。如果没有找到匹配的用户，则返回null。
+     */
+    @Override
+    public User getUserByRoomId(Integer roomId) {
+        // 创建查询包装器并设置查询条件为房间ID等于传入的roomId
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("room_id", roomId);
+        // 根据查询条件从数据库中查询一个用户并返回
+        return userMapper.selectOne(queryWrapper);
+    }
 }
