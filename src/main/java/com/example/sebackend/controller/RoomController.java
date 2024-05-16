@@ -78,8 +78,8 @@ public class RoomController {
     public ResponseEntity<Map<String, Object>> createRoom() {
         Room room = new Room();
         // 初始化房间属性为默认值
-        room.setCurrentTemperature(24.0f);  // 设置默认当前温度
-        room.setTargetTemperature(24.0f);  // 设置默认目标温度
+        room.setCurrentTemperature(20.0f);  // 设置默认当前温度
+        room.setTargetTemperature(20.0f);  // 设置默认目标温度
         room.setFanSpeed("medium");  // 设置默认风速
         room.setTemperatureThreshold(1.0f);  // 设置默认温度阈值
         room.setStatus("off");  // 设置默认状态为关闭

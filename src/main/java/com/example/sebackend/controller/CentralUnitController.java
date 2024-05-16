@@ -98,6 +98,7 @@ public class CentralUnitController {
         List<Room> rooms = centralUnitService.getStatus();
         return createResponse(HttpStatus.OK, "获取从控机状态成功", rooms);
     }
+
     //设置刷新频率,单位为秒
     /**
     *@InterfaceName: 设置刷新频率
