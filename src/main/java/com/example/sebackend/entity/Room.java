@@ -31,4 +31,6 @@ public class Room {
     private String serviceStatus;  // 服务状态 ('waiting', 'serving')
     private Float energyConsumed;  // 房间消耗的能量（能量单位）
     private Float costAccumulated;  // 房间累计的费用
+    private Integer unitId;  // 关联的中央空调单元ID
+
 }
