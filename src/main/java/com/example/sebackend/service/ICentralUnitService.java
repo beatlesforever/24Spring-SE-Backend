@@ -23,4 +23,8 @@ public interface ICentralUnitService extends IService<CentralUnit> {
     List<Room> getStatus();
 
     CentralUnit uodateFrequency(int frequency);
+
+    void setMode(String mode);
+
+    void segfaultTemperature(float defaultTemperature);
 }

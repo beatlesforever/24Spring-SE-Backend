@@ -37,7 +37,7 @@ public class CentralUnitController {
 
     //开启中央空调
     @GetMapping("/on")
-    /**
+    /*
      * 中央空调开机
      * > 根据季节设置模式和工作温度
      * > 开启定时任务---扫描调度队列长度
@@ -53,7 +53,8 @@ public class CentralUnitController {
     }
 
     /**
-     * 中央空调关机--不接受请求,但是仍然保留其他功能?
+     * 中央空调关机-
+     * 不接受温度调节请求,但是仍然保留其他功能?
      * <p>
      * > 设置中央空调的状态
      * > 关闭定时任务--扫描调度队列长度
@@ -66,7 +67,8 @@ public class CentralUnitController {
     }
 
     /**
-     * 从控机开机申请认证,加入判断(中央空调是否开启),通过后
+     * 从控机开机申请认证
+     * ,加入判断(中央空调是否开启),通过后
      * 将房间的目标温度设置成缺省温度和工作模式和中央空调同步,
      * 对比目标温度和环境温度,不相同将将房间的状态设置成on,
      * 相同将房间温度设置成standby,将请求加入到请求队列中,设置房间waiting
@@ -84,10 +86,11 @@ public class CentralUnitController {
     }
 
     /**
-     * todo:
-     * 主控机实时监测从控机
+     *中央空调获取从控机状态
+     * todo:主控机实时监测从控机
      * > 使用websocket实现
      * > 配置刷新频率
+     * @return ResponseEntity<Map < String, Object>>
      */
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
@@ -96,12 +99,40 @@ public class CentralUnitController {
         return createResponse(HttpStatus.OK, "获取从控机状态成功", rooms);
     }
     //设置刷新频率,单位为秒
+    /**
+    *@InterfaceName: 设置刷新频率
+    *@Description: 设置刷新频率
+    *@Author: suny
+    */
+
     @GetMapping("/frequency")
     public ResponseEntity<Map<String, Object>> setFrequency(@RequestParam int frequency) {
         log.info("设置刷新频率");
         CentralUnit centralUnit = centralUnitService.uodateFrequency(frequency);
         return createResponse(HttpStatus.OK, "设置刷新频率成功", centralUnit);
     }
+
+    /*
+    中央空调接受请求
+      从控机修改目标温度后,加入判断(中央空调是否开启),
+      发送送风请求(目标温度,和当前的风速模式,默认是中风,在房间创建的时候设置),
+      后端判断合理后,设置属性(目标温度,服务状态为waiting)
+     */
+    /**
+     *从控机修改风速模式请求后,加入判断(中央空调是否开启),发送送风请求,
+     * 后端判断合理之后,修改房间对应属性(风速模式,服务状态为waiting)并保存到数据库中,
+     * 将请求加入到等待队列,并将之前的同一房间的等待中的请求删除队列
+     */
+    @GetMapping("/requests")
+    public ResponseEntity<Map<String, Object>> getRequests(@RequestParam float targetTemperature, @RequestParam String fanSpeed) {
+        log.info("中央空调接收请求");
+//        List<Room> rooms = centralUnitService.getRequests();
+        return createResponse(HttpStatus.OK, "发送请求成功", null);
+    }
+
+    //todo
+
+
 
 
 

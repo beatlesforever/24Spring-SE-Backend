@@ -8,6 +8,7 @@ import com.example.sebackend.mapper.CentralUnitMapper;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.mapper.UserMapper;
 import com.example.sebackend.service.ICentralUnitService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,8 @@ import java.util.List;
  * @project SE-backend
  */
 @Service
+@Slf4j
+
 public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, CentralUnit> implements ICentralUnitService {
     @Autowired
     CentralUnitMapper centralUnitMapper;
@@ -26,8 +29,6 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     RoomMapper roomMapper;
     @Autowired
     UserMapper userMapper;
-    
-    
 
 
     //状态为0设置成失败,状态为1设置成成功
@@ -58,6 +59,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     }
 
     private Room extracted() {
+        log.info("User:{}", BaseContext.getCurrentUser());
         int roomId = userMapper.getByUsername(BaseContext.getCurrentUser());
         return roomMapper.getId(roomId);
     }
@@ -88,13 +90,14 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         CentralUnit centralUnit = centralUnitMapper.getCentral();
         centralUnit.setStatus("off");
         centralUnitMapper.update(centralUnit);
-        return null;
+        return centralUnit;
     }
 
     @Override
     public CentralUnit authen() {
         //查找用户
         Room room = extracted();
+        log.info("room");
         //设置工作模式和温度
         room.setMode(centralUnitMapper.getCentral().getMode());
         room.setCurrentTemperature(centralUnitMapper.getCentral().getCurrentTemperature());
@@ -105,6 +108,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     @Override
     public List<Room> getStatus() {
         //获取从控机状态
+
         //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
         return roomMapper.list();
     }
@@ -113,6 +117,23 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     public CentralUnit uodateFrequency(int frequency) {
         centralUnitMapper.updateFrequency(frequency);
         return centralUnitMapper.getCentral();
+    }
+
+    @Override
+    public void setMode(String mode) {
+        //修改中央空调工作模式
+        CentralUnit centralUnit = centralUnitMapper.getCentral();
+        centralUnit.setMode(mode);
+        centralUnitMapper.update(centralUnit);
+
+    }
+
+    @Override
+    public void segfaultTemperature(float defaultTemperature) {
+        //设置中央空调的缺省温度
+        CentralUnit centralUnit = centralUnitMapper.getCentral();
+        centralUnit.setDefaultTemperature(defaultTemperature);
+        centralUnitMapper.update(centralUnit);
     }
 
 

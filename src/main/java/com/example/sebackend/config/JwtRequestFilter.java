@@ -57,13 +57,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // 解析JWT并验证
         String username = null;
-        String roomId = null;
 
         String jwt = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             log.info("JWT认证：{}", authorizationHeader);
             jwt = authorizationHeader.substring(7); // 从Authorization头中提取JWT
             username = JwtUtil.extractUsername(jwt); // 从JWT中解析出用户名
+            log.info("JWT认证：{}", username);
+            BaseContext.setCurrentUser(username);
         }
 
         // 当username非空且SecurityContextHolder中没有认证信息时，执行认证流程
