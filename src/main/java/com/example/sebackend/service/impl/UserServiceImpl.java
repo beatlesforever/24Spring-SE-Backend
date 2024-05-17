@@ -37,18 +37,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param user 用户对象，包含用户名和密码等信息。
      * @return boolean 如果用户成功注册返回true，如果用户已存在则返回false。
      */
-    public boolean register(User user) {
+    public User register(User user) {
         // 根据用户名查找已存在的用户
         User existingUser = findByUsername(user.getUsername());
         if (existingUser == null) {
             // 如果不存在相同用户名的用户，则对密码进行编码并保存新用户
             String encodedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(encodedPassword);
+            user.setRole("user");
             userMapper.insert(user);
-            return true;
+            return user; // 返回已注册的用户对象
+
         }
-        // 如果已存在相同用户名的用户，则不进行注册，返回false
-        return false;
+        // 如果已存在相同用户名的用户，则不进行注册，返回null
+        return null;
     }
 
     /**

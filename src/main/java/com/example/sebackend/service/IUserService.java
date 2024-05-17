@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface IUserService extends IService<User> {
     User login(String username, String password);
 
-    boolean register(User user);
+    User register(User user);
 
     UserDetails loadUserByUsername(String username);
 

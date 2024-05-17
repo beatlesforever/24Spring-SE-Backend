@@ -73,19 +73,20 @@ public class UserController {
         }
 
         // 尝试注册用户
-        boolean success = userService.register(user);
-        if (success) {
+        User registeredUser = userService.register(user);
+        if (registeredUser != null) {
             // 注册成功，返回创建状态码和相应的消息
             Map<String, Object> data = new HashMap<>();
-            data.put("userId", user.getUserId()); // 假设ID是自动生成的
-            data.put("username", user.getUsername());
-            data.put("roomId",user.getRoomId());
-            data.put("role", user.getRole());
+            data.put("userId", registeredUser.getUserId());
+            data.put("username", registeredUser.getUsername());
+            data.put("roomId", registeredUser.getRoomId());
+            data.put("role", registeredUser.getRole()); // 确保角色是最新的
             return createResponse(HttpStatus.OK, "用户注册成功", data);
         } else {
             // 注册失败，返回错误状态码和相应的消息
             return createResponse(HttpStatus.BAD_REQUEST, "注册失败，用户名可能已存在", null);
         }
+
     }
 
 }
