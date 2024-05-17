@@ -2,6 +2,7 @@ package com.example.sebackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.sebackend.entity.CentralUnit;
+import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 
 import java.util.List;
@@ -23,4 +24,10 @@ public interface ICentralUnitService extends IService<CentralUnit> {
     List<Room> getStatus();
 
     CentralUnit uodateFrequency(int frequency);
+
+    void setMode(String mode);
+
+    void segfaultTemperature(float defaultTemperature);
+
+    Response requests(float targetTemperature, String fanSpeed);
 }

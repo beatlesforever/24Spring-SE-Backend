@@ -15,4 +15,6 @@ public interface IUserService extends IService<User> {
     boolean register(User user);
 
     UserDetails loadUserByUsername(String username);
+
+    User getUserByRoomId(Integer roomId);
 }

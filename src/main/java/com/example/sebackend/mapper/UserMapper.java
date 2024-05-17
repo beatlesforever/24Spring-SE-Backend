@@ -16,6 +16,6 @@ public interface UserMapper extends BaseMapper<User>{
     @Select("select * from user where room_id = #{roomId}")
     int getByRoomId(Integer roomId);
 
-@Select("select room_id from user where username = #{currentUser}")
-    int getByUsername(String currentUser);
+@Select("select room_id from user where username = #{userName}")
+    int getByUsername(String userName);
 }

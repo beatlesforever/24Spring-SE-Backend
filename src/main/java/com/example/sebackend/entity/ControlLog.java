@@ -23,7 +23,6 @@ public class ControlLog {
     private String requestedFanSpeed;  // 请求的风速 ('high', 'medium', 'low')
     private String mode;  // 当前工作模式 ('heating', 'cooling')
     private LocalDateTime requestTime;  // 请求时间
-    private LocalDateTime responseTime;  // 响应时间，系统处理请求并开始调节的时间
     private LocalDateTime endTime;  // 调节结束时间，系统完成调节的时间
     private Integer duration;  // 调节持续的时间（秒），可用于后续的能耗计算
     private boolean isCompleted;  // 是否完成
