@@ -20,6 +20,7 @@ public class ControlLog {
     private Integer roomId;  // 关联的房间编号
     private Float requestedTemp;  // 请求的温度
     private Float actualTemp;  // 实际温度
+    private Float endTemp;  //结束服务时的温度
     private String requestedFanSpeed;  // 请求的风速 ('high', 'medium', 'low')
     private String mode;  // 当前工作模式 ('heating', 'cooling')
     private LocalDateTime requestTime;  // 请求时间
