@@ -168,7 +168,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         environmentTemperature.setTemperature(currentTemperature);
 
         // 保存环境温度
-        environmentTemperatureService.save(environmentTemperature);
+        // environmentTemperatureService.save(environmentTemperature);
         // 更新所有房间的温度
         roomService.updateRoomTemperatures(currentTemperature);
     }

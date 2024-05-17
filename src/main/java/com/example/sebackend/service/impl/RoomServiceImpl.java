@@ -62,7 +62,6 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
      */
     @Override
     public void updateRoomTemperatures(float environmentTemperature) {
-        System.out.println(environmentTemperature);
         // 获取所有房间列表
         List<Room> rooms = this.list();
         for (Room room : rooms) {
