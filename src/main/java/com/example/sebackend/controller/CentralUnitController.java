@@ -49,7 +49,6 @@ public class CentralUnitController {
     /**
      * 开启中央空调
      * > 根据季节设置模式和工作温度
-     * > 开启定时任务---扫描调度队列长度
      */
     @PostMapping("/on")
     @PreAuthorize("hasAuthority('admin')")
@@ -148,9 +147,6 @@ public class CentralUnitController {
      * 修改刷新频率
      * 单位为秒
      *
-     * @InterfaceName: 设置刷新频率
-     * @Description: 设置刷新频率
-     * @Author: suny
      */
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/frequency")
