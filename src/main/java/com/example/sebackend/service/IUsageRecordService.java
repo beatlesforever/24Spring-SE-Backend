@@ -13,4 +13,9 @@ import java.time.LocalDateTime;
 public interface IUsageRecordService extends IService<UsageRecord> {
     // 通过房间号获取在时间范围内的使用记录次数
     int getUsageRecordCount(int roomId, LocalDateTime startTime, LocalDateTime endTime);
+
+
+    void saveEndRecord(int roomId, LocalDateTime now);
+
+    void saveStartRecord(UsageRecord usageRecord);
 }

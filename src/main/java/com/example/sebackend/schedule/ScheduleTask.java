@@ -3,7 +3,9 @@ package com.example.sebackend.schedule;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.ICentralUnitService;
+import com.example.sebackend.service.IControlLogService;
 import com.example.sebackend.service.IRoomService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
+@Slf4j
 public class ScheduleTask {
 
     @Autowired
@@ -27,8 +30,17 @@ public class ScheduleTask {
     private ICentralUnitService centralUnitService;
     @Autowired
     private final ConcurrentHashMap<Integer, Room> roomMap;
+
     @Autowired
     private SimpMessagingTemplate template;
+
+    @Autowired
+    public void configureTemplate(SimpMessagingTemplate template) {
+        this.template.setDefaultDestination("/air/requestServing");
+    }
+
+    @Autowired
+    IControlLogService controlLogService;
 
     private static final ExecutorService ROOM_TEMPERATURE_EXECUTOR = Executors.newFixedThreadPool(10);
     private static final ExecutorService AIR_CONDITIONER_EXECUTOR = Executors.newFixedThreadPool(3);
@@ -91,8 +103,7 @@ public class ScheduleTask {
                         } else if (Objects.equals(room.getFanSpeed(), "low")) {
                             room.setCurrentTemperature(room.getCurrentTemperature() - 0.4f);
                         }
-                    }
-                    else if (Objects.equals(room.getMode(), "heating")) {
+                    } else if (Objects.equals(room.getMode(), "heating")) {
                         if (Objects.equals(room.getFanSpeed(), "high")) {
                             room.setCurrentTemperature(room.getCurrentTemperature() + 0.6f);
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
@@ -138,16 +149,24 @@ public class ScheduleTask {
         for (int i = 1; i <= 3; i++) {
             AIR_CONDITIONER_EXECUTOR.execute(() -> {
                 int queueLength = roomMap.size();
-                if (queueLength>0){
+                //遍历打印roomMap中的内容
+                roomMap.forEach((key, value) -> {
+                    log.info("roomMap: key:{}, value:{}", key, value);
+                });
+                if (queueLength > 0) {
                     //取出队列中的请求,设置空调状态为on,服务为serving,将请求在队列中删除
-                    Room room = roomService.current_userRoom();
+//                    Room room = roomService.current_userRoom();
+                    //从roomMap中取出第一个请求
+                    Room room = roomMap.entrySet().iterator().next().getValue();
+                    log.info("room:{}", room);
                     room.setStatus("on");
                     room.setServiceStatus("serving");
                     roomMap.remove(room.getRoomId());
                     roomService.updateRoom(room);
+                    //填写usage_record表
+                    controlLogService.addControlLog(room);
                     //请求被处理后,使用websocket通知前端
-                    template.convertAndSend("/air/requestServing" + new Response(200,"请求已完成",room));
-
+                    template.convertAndSend("/air/requestServing" + new Response(200, "请求已完成", room));
                 }
             });
         }

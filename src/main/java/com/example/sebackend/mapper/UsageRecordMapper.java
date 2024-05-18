@@ -17,6 +17,10 @@ import java.util.List;
 public interface UsageRecordMapper extends BaseMapper<UsageRecord> {
 
     //通过房间号查询时间范围内的使用记录
-    @Select("SELECT * FROM usage_record WHERE roomId = #{roomId} AND startTime >= #{startTime} AND startTime <= #{endTime};")
+    @Select("SELECT * FROM usage_record WHERE room_id = #{roomId} AND start_time >= #{startTime} AND end_time <= #{endTime};")
     List<UsageRecord> getUsageRecords(int roomId, LocalDateTime startTime, LocalDateTime endTime);
+
+    //按照房间号查找所有房间号相同的记录
+    List<UsageRecord> saveEndRecord(int roomId);
+
 }

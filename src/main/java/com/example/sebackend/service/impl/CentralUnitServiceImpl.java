@@ -5,15 +5,19 @@ import com.example.sebackend.context.BaseContext;
 import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
+import com.example.sebackend.entity.UsageRecord;
 import com.example.sebackend.mapper.CentralUnitMapper;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.mapper.UserMapper;
 import com.example.sebackend.service.ICentralUnitService;
+import com.example.sebackend.service.IControlLogService;
+import com.example.sebackend.service.IUsageRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,6 +40,10 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     private final ConcurrentHashMap<Integer,Room> roomMap;
     @Autowired
     private SimpMessagingTemplate template;
+    @Autowired
+    IControlLogService controlLogService;
+    @Autowired
+    private IUsageRecordService usageRecordService;
 
 
     public CentralUnitServiceImpl(ConcurrentHashMap<Integer, Room> roomMap) {
@@ -117,6 +125,8 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         //设置工作模式和温度
         room.setMode(centralUnitMapper.getCentral().getMode());
         room.setTargetTemperature(centralUnitMapper.getCentral().getDefaultTemperature());
+        //设置更新时间
+        room.setLastUpdate(LocalDateTime.now());
         //对比目标温度和环境温度
         if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature()) )==0) {
             room.setStatus("standby");
@@ -127,6 +137,9 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
             roomMap.put(room.getRoomId(), room);
         }
         roomMapper.update(room);
+        //写入开机记录
+        UsageRecord usageRecord = new UsageRecord(room.getRoomId(), LocalDateTime.now());
+        usageRecordService.save(usageRecord);
         return centralUnitMapper.getCentral();
     }
 
@@ -195,8 +208,13 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     //设置属性
                     room.setTargetTemperature(targetTemperature);
                     room.setFanSpeed(fanSpeed);
+                    room.setStatus("on");
                     room.setServiceStatus("waiting");
                     roomMapper.update(room);
+                    //添加到记录中
+                    //当前时间
+                    LocalDateTime now = LocalDateTime.now();
+                    controlLogService.setLatestLog(room.getRoomId(), now ,true,room.getCurrentTemperature());
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
@@ -211,6 +229,10 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     room.setServiceStatus("waiting");
                     room.setStatus("on");
                     roomMapper.update(room);
+                    //添加到记录中
+                    //当前时间
+                    LocalDateTime now = LocalDateTime.now();
+                    controlLogService.setLatestLog(room.getRoomId(), now ,true,room.getCurrentTemperature());
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
