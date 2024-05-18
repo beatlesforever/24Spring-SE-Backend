@@ -2,6 +2,7 @@ package com.example.sebackend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.sebackend.context.BaseContext;
+import com.example.sebackend.context.FrequencyConstant;
 import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
@@ -146,14 +147,18 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     @Override
     public List<Room> getStatus() {
         //获取从控机状态
-
+        List<Room> rooms = roomMapper.list();
         //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
+        Response response = new Response(200, "从控机状态已更新",rooms);
+        template.convertAndSend("/air/RoomStatus", response);
         return roomMapper.list();
     }
 
     @Override
     public CentralUnit uodateFrequency(int frequency) {
         centralUnitMapper.updateFrequency(frequency);
+        //修改配置
+        FrequencyConstant.frequency= frequency;
         return centralUnitMapper.getCentral();
     }
 

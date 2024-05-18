@@ -15,8 +15,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     * 房间号和房间信息的映射
  */
 public class QueueConfig {
-    @Bean
+    @Bean(name = "roomQueue")
     public ConcurrentHashMap<Integer,Room> roomQueue() {
+        return new ConcurrentHashMap<>();
+    }
+    @Bean(name = "processingRooms")
+    public ConcurrentHashMap<Integer,Boolean> processingRooms() {
         return new ConcurrentHashMap<>();
     }
 }

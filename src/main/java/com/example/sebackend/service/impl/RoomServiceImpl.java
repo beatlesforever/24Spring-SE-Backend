@@ -6,6 +6,7 @@ import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.service.IRoomService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +20,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IRoomService {
-    @Autowired
-    private final ConcurrentHashMap<Integer, Room> roomMap;
+
     @Autowired
     RoomMapper roomMapper;
-
-    public RoomServiceImpl(ConcurrentHashMap<Integer, Room> roomMap) {
-        this.roomMap = roomMap;
+    private final ConcurrentHashMap<Integer, Room> roomMap;
+    private final ConcurrentHashMap<Integer, Boolean> processingRooms;
+    @Autowired
+    public RoomServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomQueue,
+                        @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
+        this.roomMap = roomQueue;
+        this.processingRooms = processingRooms;
     }
 
     //判断房间的请求信息是否存在
@@ -33,26 +37,38 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         return roomMap.containsKey(key);
     }
 
-    //获取优先级最高的请求
+    //高速风优先,先来先服务
     public Room current_userRoom() {
         Room room = null;
-        label:
         for (Room value : roomMap.values()) {
-            //高速风优先级最高
-            switch (value.getFanSpeed()) {
-                case "high":
-                    room = value;
-                    break label;
-                case "medium":
-                    room = value;
-                    break;
-                case "low":
-                    room = value;
-                    break;
+            // 检查房间是否已经在处理中
+            if (!processingRooms.containsKey(value.getRoomId())) {
+                switch (value.getFanSpeed()) {
+                    case "high":
+                        room = value;
+                        // 标记此房间正在被处理
+//                        processingRooms.put(value.getRoomId(), true);
+                        break;
+//                        return room;  // 一旦找到最高优先级的房间就立即退出
+                    case "medium":
+                        if (room == null || !room.getFanSpeed().equals("high")) { // 只有在没有找到高优先级房间的情况下才覆盖
+                            room = value;
+                        }
+                        break;
+                    case "low":
+                        if (room == null || (!room.getFanSpeed().equals("high") && !room.getFanSpeed().equals("medium"))) { // 只有在没有找到高或中优先级房间的情况下才覆盖
+                            room = value;
+                        }
+                        break;
+                }
             }
+        }
+        if (room != null) {
+            processingRooms.put(room.getRoomId(), true); // 标记选中的房间正在被处理
         }
         return room;
     }
+
 
     @Override
     public void updateRoom(Room room) {
