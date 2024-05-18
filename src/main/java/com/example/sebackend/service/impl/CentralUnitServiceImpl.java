@@ -204,7 +204,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         if (centralUnit.getStatus().equals("off")) {
             //通知前端,中央空调已关机
             Response response = new Response(403, "中央空调已关机", room);
-            template.convertAndSend("/air/requestServing", response);
+//            template.convertAndSend("/air/requestServing", response);
             return response;
         }else {
             //判断合理性
@@ -223,7 +223,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
-                    template.convertAndSend("/air/requestServing", response);
+//                    template.convertAndSend("/air/requestServing", response);
                     return response;
                 }
             } else if (room.getMode().equals("heating")) {
@@ -241,7 +241,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
-                    template.convertAndSend("/air/requestServing", response);
+//                    template.convertAndSend("/air/requestServing", response);
                     return response;
                 }
             }
@@ -250,7 +250,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
             roomMap.put(room.getRoomId(), room);
             //通知前端,请求已加入等待队列
             Response response = new Response(200, "请求已加入等待队列", room);
-            template.convertAndSend("/air/requestServing", response);
+//            template.convertAndSend("/air/requestServing", response);
             return response;
         }
     }

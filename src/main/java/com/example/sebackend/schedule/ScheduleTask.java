@@ -192,6 +192,7 @@ public class ScheduleTask {
                         //清除标记
                         processingRooms.remove(id); // 清除处理标记
                         // 请求被处理后, 使用websocket通知前端
+                        //通知接口: /air/requestServing
                         template.convertAndSend("/air/requestServing", new Response(200, "请求已完成", room));
                         return null; // 删除处理过的房间
                     });
@@ -201,16 +202,6 @@ public class ScheduleTask {
         }
     }
 
-    private void processRoom(Room room) {
-        log.info("Processing room: {}", room);
-        room.setStatus("on");
-        room.setServiceStatus("serving");
-
-        roomService.updateRoom(room);
-        controlLogService.addControlLog(room);
-        // 请求被处理后, 使用websocket通知前端
-        template.convertAndSend("/air/requestServing", new Response(200, "请求已完成", room));
-    }
 
     //根据更新频率,更新从控机的状态
     //每秒扫描一次,如果当前频率和更新频率不相同,需要进行累计,达到更新率的时候通知前端
@@ -228,6 +219,7 @@ public class ScheduleTask {
             //获取从控机状态
             List<Room> rooms = roomService.list();
             //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
+            //通知接口: /air/RoomStatus
             Response response = new Response(200, "从控机状态已更新", rooms);
             template.convertAndSend("/air/RoomStatus", response);
         }
