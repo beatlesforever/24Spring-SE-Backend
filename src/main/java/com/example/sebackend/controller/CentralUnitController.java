@@ -173,11 +173,9 @@ public class CentralUnitController {
         } else if (Objects.equals(re.getCode(), 404)) {
             return createResponse(HttpStatus.BAD_REQUEST, "目标温度设置不合理", room);
         } else {
-            return createResponse(HttpStatus.OK, "服务已完成", room);
+            return createResponse(HttpStatus.OK, "温控请求已接收", room);
         }
     }
-
-    //todo
 
 
 }

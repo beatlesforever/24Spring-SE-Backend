@@ -1,5 +1,6 @@
 package com.example.sebackend.schedule;
 
+import com.example.sebackend.context.FrequencyConstant;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.ICentralUnitService;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -33,9 +36,10 @@ public class ScheduleTask {
 
     private final ConcurrentHashMap<Integer, Room> roomMap;
     private final ConcurrentHashMap<Integer, Boolean> processingRooms;
+
     @Autowired
     public ScheduleTask(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomQueue,
-                       @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
+                        @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
         this.roomMap = roomQueue;
         this.processingRooms = processingRooms;
     }
@@ -43,7 +47,9 @@ public class ScheduleTask {
     @Autowired
     private SimpMessagingTemplate template;
 
-    private static  int count = 6;
+    private static int count = 6;
+    private static int frequency = 0;
+    private static int currentFrequency = 0;
 
     @Autowired
     public void configureTemplate(SimpMessagingTemplate template) {
@@ -56,7 +62,6 @@ public class ScheduleTask {
     private static final ExecutorService ROOM_TEMPERATURE_EXECUTOR = Executors.newFixedThreadPool(10);
     private static final int MAX_THREADS = 3;
     private static final ExecutorService AIR_CONDITIONER_EXECUTOR = Executors.newFixedThreadPool(MAX_THREADS);
-
 
 
     @Async
@@ -73,9 +78,7 @@ public class ScheduleTask {
     //从控机机工作状态下,房间的温度变化调整
     //10s检测房间温度,把请求放到调度队列中,60s处理房间温度和记录消费
     @Async
-    //延迟1s执行
-
-    @Scheduled(fixedRate = 10000 ,initialDelay = 1000) // Execute every minute
+    @Scheduled(fixedRate = 10000, initialDelay = 1000) // Execute every minute
     public void adjustRoomTemperature() {
         //定时任务,一分钟,高速变化0.6,中速变化0.5,低速变化0.4-多线程
         //
@@ -148,7 +151,7 @@ public class ScheduleTask {
                         }
                         roomService.updateRoom(room);
                     }
-                    count=6;//重置
+                    count = 6;//重置
                 }
 
 
@@ -197,6 +200,7 @@ public class ScheduleTask {
             });
         }
     }
+
     private void processRoom(Room room) {
         log.info("Processing room: {}", room);
         room.setStatus("on");
@@ -208,6 +212,25 @@ public class ScheduleTask {
         template.convertAndSend("/air/requestServing", new Response(200, "请求已完成", room));
     }
 
+    //根据更新频率,更新从控机的状态
+    //每秒扫描一次,如果当前频率和更新频率不相同,需要进行累计,达到更新率的时候通知前端
+    //如果频率相同,不进行操作
+    @Scheduled(fixedRate = 1000) // 每秒扫描一次
+    public void updateRoomStatus() {
+        if (FrequencyConstant.frequency == frequency) {
+            return;
+        } else {
+            frequency = FrequencyConstant.frequency;
+            currentFrequency = 0;
+        }
+        currentFrequency++;
+        if (currentFrequency == frequency) {
+            //获取从控机状态
+            List<Room> rooms = roomService.list();
+            //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
+            Response response = new Response(200, "从控机状态已更新", rooms);
+            template.convertAndSend("/air/RoomStatus", response);
+        }
 
-
+    }
 }

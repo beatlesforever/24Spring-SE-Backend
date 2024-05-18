@@ -2,6 +2,8 @@ package com.example.sebackend.entity;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Response implements java.io.Serializable {
     private Integer code;
@@ -11,5 +13,11 @@ public class Response implements java.io.Serializable {
         this.code = code;
         this.message = message;
         this.data = room;
+    }
+    //
+    public Response(int code, String message, List<Room> rooms) {
+        this.code = code;
+        this.message = message;
+        this.data = rooms;
     }
 }
