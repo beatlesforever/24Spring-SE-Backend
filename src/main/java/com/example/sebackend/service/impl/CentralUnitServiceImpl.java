@@ -79,78 +79,120 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         return null;
     }
 
+    /**
+     * 获取当前用户的房间信息。
+     * 该方法首先通过用户名获取用户ID，然后根据用户ID获取相应的房间。
+     *
+     * @return Room 返回当前用户的房间对象。
+     */
     private Room current_userRoom() {
+        // 记录当前用户的日志信息
         log.info("User:{}", BaseContext.getCurrentUser());
+        // 根据用户名获取用户ID
         int roomId = userMapper.getByUsername(BaseContext.getCurrentUser());
+        // 根据房间ID获取房间对象
         return roomMapper.getId(roomId);
     }
 
 
+    /**
+     * 打开中央空调，设置默认工作状态和温度。
+     * 该方法会将中央空调的状态设置为开启，工作模式默认为制冷，初始温度设置为22度。
+     * 同时设定最高温度为25度，最低温度为18度，并设置从控机最大数量为3。
+     *
+     * @return CentralUnit 返回更新后的中央空调对象。
+     */
     @Override
     public CentralUnit turnOn() {
-        //更改中央空调状态为开启,默认工作模式为制冷,设置默认工作温度为22度
-        //设置最高工作温度为25度,设置最低工作温度为18度
-        //根据环境温度设置
+        // 获取当前中央单位实例
         CentralUnit centralUnit = centralUnitMapper.getCentral();
+        // 设置中央空调为开启状态
         centralUnit.setStatus("on");
+        // 设置默认工作模式为制冷
         centralUnit.setMode("cooling");
+        // 设置当前和默认温度为22度
         centralUnit.setCurrentTemperature(22.0F);
         centralUnit.setDefaultTemperature(22.0F);
+        // 设置最高和最低温度限制
         centralUnit.setMaxTemperature(25.0F);
         centralUnit.setMinTemperature(18.0F);
-        centralUnit.setCapacity(3);//从控机最大数量3
+        // 设置从控机最大数量为3
+        centralUnit.setCapacity(3);
+        // 更新中央单位实例的状态
         centralUnitMapper.update(centralUnit);
 
         return centralUnit;
-
     }
 
+
+    /**
+     * 关闭中央空调。
+     * 该方法会将中央单元的状态更改为“关闭”，并更新数据库中的相应状态。
+     *
+     * @return CentralUnit 返回更新后的中央单元对象，其状态已更改为“关闭”。
+     */
     @Override
     public CentralUnit turnOff() {
-        //更改中央空调状态为关闭
+        // 获取当前的中央单元对象
         CentralUnit centralUnit = centralUnitMapper.getCentral();
+        // 将中央单元的状态设置为关闭
         centralUnit.setStatus("off");
+        // 更新数据库中的中央单元状态
         centralUnitMapper.update(centralUnit);
         return centralUnit;
     }
 
-    //,将房间的目标温度设置成缺省温度和工作模式和中央空调同步
-    // ,对比目标温度和环境温度,
-    // 相同将房间温度设置成standby,
-    // 不相同将将房间的状态设置成on,将请求加入到请求队列中,设置房间waiting
+
+    /**
+     * 对房间进行认证并根据目标温度和当前温度调整房间状态。
+     * 该方法会将房间的目标温度设置为中央单元的缺省温度，并与中央单元的工作模式同步。
+     * 根据目标温度与环境温度的比较，来更新房间的状态。
+     *
+     * @return CentralUnit 返回当前中央单元的信息。
+     */
     @Override
     public CentralUnit authen() {
-        //查找用户
+        // 查找当前用户所在的房间
         Room room = current_userRoom();
         log.info("room");
-        //设置工作模式和温度
+        // 设置房间的工作模式和目标温度为中央单元的默认模式和温度
         room.setMode(centralUnitMapper.getCentral().getMode());
         room.setTargetTemperature(centralUnitMapper.getCentral().getDefaultTemperature());
-        //设置更新时间
+        // 更新房间的最后活动时间
         room.setLastUpdate(LocalDateTime.now());
-        //对比目标温度和环境温度
+        // 比较目标温度和当前温度，以决定房间的状态
         if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature()) )==0) {
             room.setStatus("standby");
         } else {
             room.setStatus("on");
             room.setServiceStatus("waiting");
-            //将请求加入到请求队列中
+            // 将房间请求加入到请求队列中
             roomMap.put(room.getRoomId(), room);
         }
+        // 更新房间信息到数据库
         roomMapper.update(room);
-        //写入开机记录
+        // 写入开机使用记录
         UsageRecord usageRecord = new UsageRecord(room.getRoomId(), LocalDateTime.now());
         usageRecordService.save(usageRecord);
+        // 返回中央单元的信息
         return centralUnitMapper.getCentral();
     }
 
+    /**
+     * 获取从控机状态，并将状态更新通过消息模板发送出去。
+     *
+     * @return 返回当前所有房间的最新状态列表。
+     */
     @Override
     public List<Room> getStatus() {
-        //获取从控机状态
+        // 获取当前所有房间的状态
         List<Room> rooms = roomMapper.list();
-        //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
-        Response response = new Response(200, "从控机状态已更新",rooms);
+
+        // 将房间状态封装成响应对象，发送到指定主题
+        Response response = new Response(200, "从控机状态已更新", rooms);
         template.convertAndSend("/air/RoomStatus", response);
+
+        // 返回最新的房间状态列表
         return roomMapper.list();
     }
 
@@ -162,20 +204,39 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         return centralUnitMapper.getCentral();
     }
 
+    /**
+     * 修改中央空调的工作模式。
+     *
+     * @param mode 指定中央空调的新工作模式。
+     * 该方法首先从中央单元管理器（centralUnitMapper）获取中央单元对象，
+     * 然后设置中央单元的工作模式为指定的模式，
+     * 最后更新中央单元对象在数据库中的状态。
+     */
     @Override
     public void setMode(String mode) {
-        //修改中央空调工作模式
+        // 获取当前的中央单元
         CentralUnit centralUnit = centralUnitMapper.getCentral();
+        // 设置新的工作模式
         centralUnit.setMode(mode);
+        // 更新中央单元的工作模式到数据库
         centralUnitMapper.update(centralUnit);
 
     }
 
+
+    /**
+     * 设置中央空调的缺省温度。
+     * 这个方法会检索中央单元，更新其缺省温度值，然后保存更改。
+     *
+     * @param defaultTemperature 指定的新缺省温度值，类型为浮点数。
+     */
     @Override
     public void segfaultTemperature(float defaultTemperature) {
-        //设置中央空调的缺省温度
+        // 获取当前中央单元
         CentralUnit centralUnit = centralUnitMapper.getCentral();
+        // 更新中央单元的缺省温度
         centralUnit.setDefaultTemperature(defaultTemperature);
+        // 保存更新后的中央单元
         centralUnitMapper.update(centralUnit);
     }
 

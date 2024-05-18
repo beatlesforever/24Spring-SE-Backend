@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.Context;
@@ -50,7 +51,8 @@ public class CentralUnitController {
      * > 根据季节设置模式和工作温度
      * > 开启定时任务---扫描调度队列长度
      */
-    @GetMapping("/on")
+    @PostMapping("/on")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Map<String, Object>> turnOn(@RequestParam String status) {
         log.info("中央空调开启");
         if (status.equals("off")) {
@@ -68,7 +70,8 @@ public class CentralUnitController {
      * > 设置中央空调的状态
      * > 关闭定时任务--扫描调度队列长度
      */
-    @GetMapping("/off")
+    @PostMapping("/off")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Map<String, Object>> turnOff() {
         log.info("中央空调关闭");
         CentralUnit centralUnit = centralUnitService.turnOff();
@@ -126,6 +129,7 @@ public class CentralUnitController {
      *
      * @return ResponseEntity<Map < String, Object>>
      */
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
         log.info("中央空调获取从控机状态");
@@ -142,8 +146,8 @@ public class CentralUnitController {
      * @Description: 设置刷新频率
      * @Author: suny
      */
-
-    @GetMapping("/frequency")
+    @PreAuthorize("hasAuthority('admin')")
+    @PostMapping("/frequency")
     public ResponseEntity<Map<String, Object>> setFrequency(@RequestParam int frequency) {
         log.info("设置刷新频率");
         CentralUnit centralUnit = centralUnitService.uodateFrequency(frequency);
@@ -161,7 +165,7 @@ public class CentralUnitController {
      *将请求加入到等待队列,并将之前的同一房间的等待中的请求删除队列
      */
 
-    @GetMapping("/requests")
+    @PostMapping("/requests")
     @SendTo("/air/requestServing")
     public ResponseEntity<Map<String, Object>> getRequests(@RequestParam float targetTemperature, @RequestParam String fanSpeed) {
         log.info("中央空调接收请求");

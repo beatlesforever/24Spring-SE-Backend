@@ -21,37 +21,41 @@ public class JwtUtil {
      * 生成用于认证的JWT Token。
      *
      * @param username 用户名，作为Token的主题。
+     * @param role 用户的角色信息，存储在Token中作为权限标识。
      * @return 生成的JWT Token字符串。
      */
-    public static String generateToken(String username) {
+    public static String generateToken(String username, String role) {
         // 创建JWT Token构建器
         return Jwts.builder()
                 // 设置Token的主题为用户名
                 .setSubject(username)
+                // 在Token中添加用户角色信息
+                .claim("role", role)
                 // 设置Token的签发时间
                 .setIssuedAt(new Date())
                 // 设置Token的过期时间，2小时后过期
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))
-                // 使用HS256算法和预定义的SECRET_KEY对Token进行签名
+                // 使用HS256算法和预定义的SECRET_KEY对Token进行签名，确保Token的安全性
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                // 将Token构建为紧凑格式的字符串
+                // 将Token构建为紧凑格式的字符串，便于在网络中传输
                 .compact();
     }
+
 
     /**
      * 从给定的JWT令牌中提取声明（Claims）。
      *
-     * @param token 待解析的JWT令牌字符串。
-     * @return 解析后的声明信息。
+     * @param token 待解析的JWT令牌字符串。这是由JWT的发行者生成的，包含用户信息的加密字符串。
+     * @return 解析后的声明信息。返回一个Claims对象，它包含了JWT中定义的所有声明信息。
      */
     public static Claims extractClaims(String token) {
         // 使用JWT解析器并设置签名密钥，然后解析令牌为Claims
-//        log.info("token: " + token);
         return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+                .setSigningKey(SECRET_KEY) // 设置用于验证JWT签名的密钥
+                .parseClaimsJws(token) // 解析JWT令牌为ClaimsJws对象
+                .getBody(); // 获取ClaimsJws对象的主体（Body），即声明信息
     }
+
 
     /**
      * 从令牌中提取用户名。

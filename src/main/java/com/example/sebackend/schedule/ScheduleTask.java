@@ -64,16 +64,30 @@ public class ScheduleTask {
     private static final ExecutorService AIR_CONDITIONER_EXECUTOR = Executors.newFixedThreadPool(MAX_THREADS);
 
 
+    /**
+     * 定时任务，用于每月第一天凌晨1点修改中央空调的设置。
+     * 该方法没有参数，也没有返回值。
+     * 根据当前月份决定空调模式（冷气或暖气），并设置默认温度。
+     * 使用cron表达式 "0 0 1 1 * ?" 来定义执行时间。
+     */
     @Async
-    @Scheduled(cron = "0 0 1 1 * ?") // Execute at 1:00 AM on the first day of each month
+    @Scheduled(cron = "0 0 1 1 * ?")
     public void modifyCentralAirConditionerSettings() {
+        // 获取当前月份，根据月份决定空调模式（冷气或暖气）
         int currentMonth = LocalDate.now().getMonthValue();
         String mode = (currentMonth >= 10 || currentMonth <= 3) ? "cooling" : "heating";
+
+        // 根据空调模式设置默认温度
         float defaultTemperature = (mode.equals("cooling")) ? 22.0f : 28.0f;
+
+        // 更新中央单元的模式和温度设置
         centralUnitService.setMode(mode);
         centralUnitService.segfaultTemperature(defaultTemperature);
-        System.out.println("执行modifyCentralAirConditionerSettings");
+
+        // 打印日志，确认方法执行
+        System.out.println("执行空调设置修改");
     }
+
 
     //从控机机工作状态下,房间的温度变化调整
     //10s检测房间温度,把请求放到调度队列中,60s处理房间温度和记录消费
@@ -159,29 +173,32 @@ public class ScheduleTask {
         }
     }
 
-    //多线程定时任务,不断的扫描调度队列的长度,如果为空设置空调为standby,否则设置为on
-    //
-    //取出队列中的请求,设置空调状态为on,服务为serving,
-    // 将请求在队列中删除,填写usage_record表
-    //
-    //开始时间为当前时间,结束时间为下一个请求的开始时间
-    //
-    //使用线程池,获取队列中的第一个请求
-    //
-    //请求被处理后,使用websocket通知前端
-    @Scheduled(fixedRate = 5000) // Execute every 3 seconds
+    /**
+     * 定时任务，用于扫描调度队列以管理空调状态。
+     * 当队列为空时，设置空调为standby状态；当队列非空时，设置空调为on状态，并处理队列中的请求。
+     * 处理过程包括设置空调状态为on，服务状态为serving，更新房间状态，记录控制日志，并通过WebSocket通知前端。
+     * 使用线程池来并发处理队列中的请求，每次任务执行时，根据当前队列长度与最大线程数确定启动的线程数量。
+     * 每个线程会获取当前用户的房间并尝试更新其状态。
+     *
+     * @Scheduled 注解指定了任务的执行周期为5000毫秒。
+     */
+    @Scheduled(fixedRate = 5000)
     public void checkSchedulerQueue() {
-        // 获取当前队列中的房间数量
+        // 计算当前队列中的房间数量
         AtomicInteger queueLength = new AtomicInteger(roomMap.size());
         System.out.printf("当前队列中的房间数量: %d%n", queueLength.get());
 
-        // 确定需要启动的线程数量
+        // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
         int threadsToStart = Math.min(queueLength.get(), MAX_THREADS);
         System.out.printf("需要启动的线程数量: %d%n", threadsToStart);
+
+        // 启动线程池中的线程以处理队列中的请求
         for (int i = 0; i < threadsToStart; i++) {
             AIR_CONDITIONER_EXECUTOR.execute(() -> {
                 System.out.printf("当前线程: %s%n", Thread.currentThread().getName());
-                Room room = roomService.current_userRoom(); // 使用方法获取当前用户的房间
+                Room room = roomService.current_userRoom(); // 获取当前用户的房间
+
+                // 如果找到房间，则处理该房间的请求
                 if (room != null) {
                     roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
                         log.info("Processing room: {}", room);
@@ -189,40 +206,46 @@ public class ScheduleTask {
                         room.setServiceStatus("serving");
                         roomService.updateRoom(room);
                         controlLogService.addControlLog(room);
-                        //清除标记
-                        processingRooms.remove(id); // 清除处理标记
-                        // 请求被处理后, 使用websocket通知前端
-                        //通知接口: /air/requestServing
+                        // 在处理完成后，清除该房间的处理标记
+                        processingRooms.remove(id);
+                        // 通过WebSocket通知前端请求已完成
                         template.convertAndSend("/air/requestServing", new Response(200, "请求已完成", room));
-                        return null; // 删除处理过的房间
+                        return null; // 从房间映射中移除已处理的房间
                     });
                 }
-
             });
         }
     }
 
 
-    //根据更新频率,更新从控机的状态
-    //每秒扫描一次,如果当前频率和更新频率不相同,需要进行累计,达到更新率的时候通知前端
-    //如果频率相同,不进行操作
+    /**
+     * 根据更新频率，更新从控机的状态。
+     * 每秒扫描一次，如果当前频率和更新频率不相同，需要进行累计，达到更新率的时候通知前端。
+     * 如果频率相同，则不进行操作。
+     */
     @Scheduled(fixedRate = 1000) // 每秒扫描一次
     public void updateRoomStatus() {
+        // 检查当前频率是否与更新频率一致，若一致则直接返回
         if (FrequencyConstant.frequency == frequency) {
             return;
         } else {
+            // 若不一致，则更新频率并重置当前频率计数
             frequency = FrequencyConstant.frequency;
             currentFrequency = 0;
         }
+
+        // 对当前频率进行累计
         currentFrequency++;
+
+        // 当累计的频率达到更新频率时，执行状态更新和通知操作
         if (currentFrequency == frequency) {
-            //获取从控机状态
+            // 获取从控机状态
             List<Room> rooms = roomService.list();
-            //8.	中央空调能够实时监测各房间的温度和状态，并要求实时刷新的频率能够进行配置
-            //通知接口: /air/RoomStatus
+            // 通知接口: /air/RoomStatus
             Response response = new Response(200, "从控机状态已更新", rooms);
             template.convertAndSend("/air/RoomStatus", response);
         }
 
     }
+
 }

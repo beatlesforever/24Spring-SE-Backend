@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -20,6 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author zhouhaoran
@@ -52,7 +55,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        // 提取请求头中的Authorization信息
+        // 从请求头中提取Authorization信息
         final String authorizationHeader = request.getHeader("Authorization");
 
         // 解析JWT并验证
@@ -61,36 +64,36 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             log.info("JWT认证：{}", authorizationHeader);
-            jwt = authorizationHeader.substring(7); // 从Authorization头中提取JWT
-            username = JwtUtil.extractUsername(jwt); // 从JWT中解析出用户名
+            jwt = authorizationHeader.substring(7); // 提取JWT
+            username = JwtUtil.extractUsername(jwt); // 解析用户名
             log.info("JWT认证：{}", username);
-            BaseContext.setCurrentUser(username);
+            BaseContext.setCurrentUser(username); // 设置当前用户
         }
 
         // 当username非空且SecurityContextHolder中没有认证信息时，执行认证流程
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // 加载用户信息
             UserDetails userDetails = this.userService.loadUserByUsername(username);
-            // 将当前用户的id存入ThreadLocal
+            Claims claims = JwtUtil.extractClaims(jwt);
+            String role = claims.get("role", String.class);
+
+            // 设置当前用户的id
             BaseContext.setCurrentUser(username);
             log.info("当前用户：{}", username);
-            // 创建新的认证token，包含权限信息
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            // 设置认证细节
-            usernamePasswordAuthenticationToken
-                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // 更新SecurityContextHolder中的认证信息
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            log.info("当前用户角色: {}",role);
+            // 创建包含权限信息的新的认证token
+            List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken); // 更新认证信息
         }
 
         log.info("JWT认证：过滤器链继续");
         // 继续执行过滤器链
         chain.doFilter(request, response);
     }
-
-
-
 
 
 }

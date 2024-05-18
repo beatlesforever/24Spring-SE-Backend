@@ -12,6 +12,7 @@ import com.example.sebackend.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -70,6 +71,7 @@ public class RoomController {
      *
      * @return ResponseEntity<Map < String, Object>> 返回一个响应实体，其中包含HTTP状态码、成功消息和所有房间的状态信息。
      */
+    @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllRooms() {
         // 从roomService获取所有房间的信息
@@ -83,6 +85,7 @@ public class RoomController {
      *
      * @return ResponseEntity<Map < String, Object>> 包含HTTP状态码、消息和创建的房间信息。
      */
+    @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createRoom() {
         Room room = new Room();
@@ -133,63 +136,6 @@ public class RoomController {
         // 构建并返回响应实体
         return createResponse(HttpStatus.OK, "获取未分配房间成功", availableRooms);
     }
-
-    /**
-     * 开启从控机
-     *
-     * @param roomId    房间ID，路径变量，用于指定要操作的房间
-     * @param loginuser 身份验证信息，包含房间号和身份证号，RequestBody参数，用于验证用户身份
-     * @return ResponseEntity<Map < String, Object>> 包含房间状态的响应实体，包括HTTP状态码、消息和房间信息
-     */
-//    @PostMapping("/{roomId}/start")
-//    public ResponseEntity<Map<String, Object>> startRoom(@PathVariable int roomId, @RequestBody User loginuser) {
-//        // 根据房间ID获取房间信息
-//        Room room = roomService.getById(roomId);
-//        // 房间不存在时的处理
-//        if (room == null) {
-//            return createResponse(HttpStatus.NOT_FOUND, "未找到指定房间", null);
-//        }
-//        // 房间已开启时的处理
-//        if ("on".equals(room.getStatus())) {
-//            return createResponse(HttpStatus.BAD_REQUEST, "从控机已经是开启状态", null);
-//        }
-//
-//        // 用户身份验证
-//        User user = userService.login(loginuser.getUsername(), loginuser.getPassword());
-//        // 用户名或密码错误的处理
-//        if (user == null) {
-//            return createResponse(HttpStatus.UNAUTHORIZED, "用户名或密码错误", null);
-//        }
-//
-//        // 验证用户是否为指定房间的住户
-//        if (!user.getRoomId().equals(roomId)) {
-//            return createResponse(HttpStatus.FORBIDDEN, "您无权操作该房间", null);
-//        }
-//
-//        // 获取中央空调信息
-//        CentralUnit centralUnit = centralUnitService.getById(room.getUnitId());
-//        // 中央空调未开启或不存在的处理
-//        if (centralUnit == null || !"on".equals(centralUnit.getStatus())) {
-//            return createResponse(HttpStatus.BAD_REQUEST, "中央空调未开启或不存在", null);
-//        }
-//
-//        // 获取中央空调的工作模式和缺省工作温度
-//        String centralMode = centralUnit.getMode();
-//        Float defaultTemperature = centralUnit.getDefaultTemperature();
-//
-//        // 更新房间状态、温度、模式和最后更新时间
-//        room.setStatus("on");
-//        room.setMode(centralMode);
-//        room.setTargetTemperature(defaultTemperature);
-//        room.setLastUpdate(LocalDateTime.now());
-//        roomService.updateById(room);
-//        //写入开机记录
-//        UsageRecord usageRecord = new UsageRecord(roomId, LocalDateTime.now() );
-//        usageRecordService.saveStartRecord(usageRecord);
-//
-//        // 返回开启成功的响应
-//        return createResponse(HttpStatus.OK, "从控机开启成功", room);
-//    }
 
 
     /**

@@ -32,12 +32,24 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         this.processingRooms = processingRooms;
     }
 
-    //判断房间的请求信息是否存在
+    /**
+     * 判断房间的请求信息是否存在
+     *
+     * @param key 用于查找房间请求信息的键值
+     * @return boolean 返回true如果房间请求信息存在，否则返回false
+     */
     public boolean containsRoom(int key) {
         return roomMap.containsKey(key);
     }
 
-    //高速风优先,先来先服务
+    /**
+     * 获取当前用户房间的方法。
+     * 该方法依据房间的风扇速度和先来先服务的原则，选择一个房间返回。
+     * 首先查找风扇速度为高的房间，如果不存在，则选择风扇速度为中的房间，
+     * 如果还不存在，则选择风扇速度为低的房间。找到房间后，标记该房间为正在处理中。
+     *
+     * @return 返回选中的房间，如果没有可用房间则返回null。
+     */
     public Room current_userRoom() {
         Room room = null;
         for (Room value : roomMap.values()) {
@@ -70,10 +82,18 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     }
 
 
+    /**
+     * 更新房间信息。
+     *
+     * @param room 房间对象，包含需要更新的房间信息。
+     * 该方法通过调用roomMapper的updateById方法，根据房间对象的ID更新数据库中的房间信息。
+     * 无返回值，更新操作的结果直接由roomMapper处理。
+     */
     @Override
     public void updateRoom(Room room) {
         roomMapper.updateById(room);
     }
+
 
     /**
      * 更新所有房间的温度，基于外部环境温度和房间当前状态。
