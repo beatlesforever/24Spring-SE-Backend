@@ -53,8 +53,10 @@ public class CentralUnitController {
      */
     @PostMapping("/on")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Map<String, Object>> turnOn(@RequestParam String status) {
+    public ResponseEntity<Map<String, Object>> turnOn() {
         log.info("中央空调开启");
+        //获取当前中央空调的状态
+        String status = centralUnitService.getById(1).getStatus();
         if (status.equals("off")) {
             CentralUnit centralUnit = centralUnitService.turnOn();
             return createResponse(HttpStatus.OK, "中央空调开启成功", centralUnit);
@@ -75,7 +77,11 @@ public class CentralUnitController {
     public ResponseEntity<Map<String, Object>> turnOff() {
         log.info("中央空调关闭");
         CentralUnit centralUnit = centralUnitService.turnOff();
-        return createResponse(HttpStatus.OK, "中央空调已关闭", centralUnit);
+        //如果中央空调已经关闭,返回已经关闭
+        if (Objects.equals(centralUnit.getStatus(), "off")) {
+            return createResponse(HttpStatus.BAD_REQUEST, "中央空调已关闭", centralUnit);
+        }
+        return createResponse(HttpStatus.OK, "中央空调关闭成功", centralUnit);
     }
 
     /**
