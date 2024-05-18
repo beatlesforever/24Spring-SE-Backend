@@ -37,7 +37,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         return roomMap.containsKey(key);
     }
 
-    //获取优先级最高的请求
+    //高速风优先,先来先服务
     public Room current_userRoom() {
         Room room = null;
         for (Room value : roomMap.values()) {
