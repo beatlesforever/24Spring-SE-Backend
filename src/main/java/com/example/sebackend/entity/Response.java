@@ -3,7 +3,7 @@ package com.example.sebackend.entity;
 import lombok.Data;
 
 @Data
-public class Response {
+public class Response implements java.io.Serializable {
     private Integer code;
     private String message;
     private Object data;

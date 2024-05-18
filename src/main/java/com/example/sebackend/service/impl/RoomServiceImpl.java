@@ -18,15 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * @project SE-backend
  */
 @Service
-public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IRoomService{
+public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IRoomService {
     @Autowired
-    private final ConcurrentHashMap<Integer,Room> roomMap;
+    private final ConcurrentHashMap<Integer, Room> roomMap;
     @Autowired
     RoomMapper roomMapper;
 
     public RoomServiceImpl(ConcurrentHashMap<Integer, Room> roomMap) {
         this.roomMap = roomMap;
     }
+
     //判断房间的请求信息是否存在
     public boolean containsRoom(int key) {
         return roomMap.containsKey(key);
@@ -35,14 +36,20 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     //获取优先级最高的请求
     public Room current_userRoom() {
         Room room = null;
+        label:
         for (Room value : roomMap.values()) {
-//            if (room == null) {
-//                room = value;
-//            } else {
-//                if (room.getPriority() < value.getPriority()) {
-//                    room = value;
-//                }
-//            }
+            //高速风优先级最高
+            switch (value.getFanSpeed()) {
+                case "high":
+                    room = value;
+                    break label;
+                case "medium":
+                    room = value;
+                    break;
+                case "low":
+                    room = value;
+                    break;
+            }
         }
         return room;
     }
@@ -58,7 +65,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
      * 每分钟向环境温度靠近0.2°C，无论温度是需要升高还是降低。
      *
      * @param environmentTemperature 外部环境的温度，用于调整房间温度的参考值。
-     *                              该参数不直接影响房间温度，而是作为调整目标温度的依据。
+     *                               该参数不直接影响房间温度，而是作为调整目标温度的依据。
      */
     @Override
     public void updateRoomTemperatures(float environmentTemperature) {

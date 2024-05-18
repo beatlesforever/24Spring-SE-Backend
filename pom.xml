@@ -54,6 +54,15 @@
             <artifactId>mybatis-typehandlers-jsr310</artifactId>
             <version>1.0.1</version>
         </dependency>
+        <!--websocket-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -65,10 +74,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

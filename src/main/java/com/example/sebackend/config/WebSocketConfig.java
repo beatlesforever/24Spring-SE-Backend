@@ -9,6 +9,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    // 配置template.convertAndSend("/air/requestServing" + new Response(200,"请求已完成",room));
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/air");  // 设置消息代理的前缀

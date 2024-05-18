@@ -45,13 +45,12 @@ public class CentralUnitController {
         return new ResponseEntity<>(responseBody, status);
     }
 
-    //开启中央空调
-    @GetMapping("/on")
-    /*
-     * 中央空调开机
+    /**
+     * 开启中央空调
      * > 根据季节设置模式和工作温度
      * > 开启定时任务---扫描调度队列长度
      */
+    @GetMapping("/on")
     public ResponseEntity<Map<String, Object>> turnOn(@RequestParam String status) {
         log.info("中央空调开启");
         if (status.equals("off")) {
@@ -63,7 +62,7 @@ public class CentralUnitController {
     }
 
     /**
-     * 中央空调关机-
+     * 关闭中央空调
      * 不接受温度调节请求,但是仍然保留其他功能?
      * <p>
      * > 设置中央空调的状态
@@ -77,7 +76,7 @@ public class CentralUnitController {
     }
 
     /**
-     * 从控机开机申请认证
+     * 从控机开机认证
      * ,加入判断(中央空调是否开启),通过后
      * 将房间的目标温度设置成缺省温度和工作模式和中央空调同步,
      * 对比目标温度和环境温度,不相同将将房间的状态设置成on,
@@ -86,7 +85,7 @@ public class CentralUnitController {
      * @return ResponseEntity<Map < String, Object>>
      */
     @PostMapping("/{roomId}/authen")
-    public ResponseEntity<Map<String, Object>> authen(@PathVariable int roomId,@RequestBody User loginuser) {
+    public ResponseEntity<Map<String, Object>> authen(@PathVariable int roomId, @RequestBody User loginuser) {
         log.info("从控机认证");
         // 根据房间ID获取房间信息
         Room room = roomService.getById(roomId);
@@ -120,7 +119,7 @@ public class CentralUnitController {
     }
 
     /**
-     * 中央空调获取从控机状态
+     * 获取从控机状态
      * todo:主控机实时监测从控机
      * > 使用websocket实现
      * > 配置刷新频率
@@ -134,9 +133,11 @@ public class CentralUnitController {
         return createResponse(HttpStatus.OK, "获取从控机状态成功", rooms);
     }
 
-    //设置刷新频率,单位为秒
 
     /**
+     * 修改刷新频率
+     * 单位为秒
+     *
      * @InterfaceName: 设置刷新频率
      * @Description: 设置刷新频率
      * @Author: suny
@@ -149,17 +150,15 @@ public class CentralUnitController {
         return createResponse(HttpStatus.OK, "设置刷新频率成功", centralUnit);
     }
 
-    /*
-    中央空调接受请求
-      从控机修改目标温度后,加入判断(中央空调是否开启),
-      发送送风请求(目标温度,和当前的风速模式,默认是中风,在房间创建的时候设置),
-      后端判断合理后,设置属性(目标温度,服务状态为waiting)
-     */
-
     /**
+     *接收温控请求
+     *中央空调接受请求
+     * 从控机修改目标温度后,加入判断(中央空调是否开启),
+     *发送送风请求(目标温度,和当前的风速模式,默认是中风,在房间创建的时候设置),
+     *后端判断合理后,设置属性(目标温度,服务状态为waiting)
      * 从控机修改风速模式请求后,加入判断(中央空调是否开启),发送送风请求,
-     * 后端判断合理之后,修改房间对应属性(风速模式,服务状态为waiting)并保存到数据库中,
-     * 将请求加入到等待队列,并将之前的同一房间的等待中的请求删除队列
+     *后端判断合理之后,修改房间对应属性(风速模式,服务状态为waiting)并保存到数据库中
+     *将请求加入到等待队列,并将之前的同一房间的等待中的请求删除队列
      */
 
     @GetMapping("/requests")
@@ -173,7 +172,7 @@ public class CentralUnitController {
             return createResponse(HttpStatus.BAD_REQUEST, "中央空调已关机", room);
         } else if (Objects.equals(re.getCode(), 404)) {
             return createResponse(HttpStatus.BAD_REQUEST, "目标温度设置不合理", room);
-        }  else {
+        } else {
             return createResponse(HttpStatus.OK, "服务已完成", room);
         }
     }

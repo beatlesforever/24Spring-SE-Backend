@@ -38,6 +38,9 @@ public class ControlLog {
         this.requestTime = requestTime;
         this.isCompleted = isCompleted;
     }
+    //无参构造函数
+    public ControlLog() {
+    }
 
 
     public float getCost(){
