@@ -1,10 +1,13 @@
 package com.example.sebackend.controller;
 
+import com.example.sebackend.context.BaseContext;
 import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.entity.User;
 import com.example.sebackend.service.ICentralUnitService;
+import com.example.sebackend.service.IRoomService;
+import com.example.sebackend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,10 @@ import java.util.Objects;
 public class CentralUnitController {
     @Autowired
     private ICentralUnitService centralUnitService;
+    @Autowired
+    private IRoomService roomService;
+    @Autowired
+    private IUserService userService;
 
     private ResponseEntity<Map<String, Object>> createResponse(HttpStatus status, String message, Object data) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -77,9 +85,31 @@ public class CentralUnitController {
      *
      * @return ResponseEntity<Map < String, Object>>
      */
-    @PostMapping("/authen")
-    public ResponseEntity<Map<String, Object>> authen() {
+    @PostMapping("/{roomId}/authen")
+    public ResponseEntity<Map<String, Object>> authen(@PathVariable int roomId,@RequestBody User loginuser) {
         log.info("从控机认证");
+        // 根据房间ID获取房间信息
+        Room room = roomService.getById(roomId);
+        // 房间不存在时的处理
+        if (room == null) {
+            return createResponse(HttpStatus.NOT_FOUND, "未找到指定房间", null);
+        }
+        // 房间已开启时的处理
+        if ("on".equals(room.getStatus())) {
+            return createResponse(HttpStatus.BAD_REQUEST, "从控机已经是开启状态", null);
+        }
+        // 用户身份验证
+        User user = userService.login(loginuser.getUsername(), loginuser.getPassword());
+        // 用户名或密码错误的处理
+        if (user == null) {
+            return createResponse(HttpStatus.UNAUTHORIZED, "用户名或密码错误", null);
+        }
+
+        // 验证用户是否为指定房间的住户
+        if (!user.getRoomId().equals(roomId)) {
+            return createResponse(HttpStatus.FORBIDDEN, "您无权操作该房间", null);
+        }
+
         CentralUnit centralUnit = centralUnitService.getById(1);
         if (Objects.equals(centralUnit.getStatus(), "off")) {
             return createResponse(HttpStatus.BAD_REQUEST, "中央空调未开启", null);

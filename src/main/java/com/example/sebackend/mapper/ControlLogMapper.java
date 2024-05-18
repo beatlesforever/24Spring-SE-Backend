@@ -20,4 +20,8 @@ public interface ControlLogMapper extends BaseMapper<ControlLog> {
 
     @Select("SELECT * FROM control_log WHERE roomId = #{roomId} AND isCompleted = true AND requestTime >= #{startTime} AND requestTime <= #{endTime};")
     List<ControlLog> getFinishedLogs(int roomId, LocalDateTime startTime, LocalDateTime endTime);
+
+    //将所有的房间号相同的记录按照时间排序，取最新的一条
+    @Select("SELECT * FROM control_log WHERE room_id = #{roomId} ORDER BY request_time DESC LIMIT 1;")
+    ControlLog getLatestLog(int roomId);
 }

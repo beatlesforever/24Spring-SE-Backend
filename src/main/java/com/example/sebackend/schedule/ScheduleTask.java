@@ -3,6 +3,7 @@ package com.example.sebackend.schedule;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.ICentralUnitService;
+import com.example.sebackend.service.IControlLogService;
 import com.example.sebackend.service.IRoomService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class ScheduleTask {
     private final ConcurrentHashMap<Integer, Room> roomMap;
     @Autowired
     private SimpMessagingTemplate template;
+    @Autowired
+    IControlLogService controlLogService;
 
     private static final ExecutorService ROOM_TEMPERATURE_EXECUTOR = Executors.newFixedThreadPool(10);
     private static final ExecutorService AIR_CONDITIONER_EXECUTOR = Executors.newFixedThreadPool(3);
@@ -145,6 +148,8 @@ public class ScheduleTask {
                     room.setServiceStatus("serving");
                     roomMap.remove(room.getRoomId());
                     roomService.updateRoom(room);
+                    //填写usage_record表
+                    controlLogService.addControlLog(room);
                     //请求被处理后,使用websocket通知前端
                     template.convertAndSend("/air/requestServing" + new Response(200,"请求已完成",room));
 

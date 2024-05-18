@@ -27,4 +27,12 @@ public class UsageRecord {
     private LocalDateTime endTime;  // 使用结束的时间
     private Float totalEnergyConsumed;  // 总能量消耗量
     private Float cost;  // 该次使用的计费金额
+
+    public UsageRecord(int roomId, LocalDateTime now) {
+        this.roomId = roomId;
+        this.startTime = now;
+    }
+    //无参构造
+    public UsageRecord() {
+    }
 }
