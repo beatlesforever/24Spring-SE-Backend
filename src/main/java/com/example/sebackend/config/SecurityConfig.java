@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and()
                 // 对静态资源、登录和注册页面的访问进行许可，无需认证即可访问
-                .authorizeRequests().antMatchers("/api/users/login", "/api/users/register").permitAll()
+                .authorizeRequests().antMatchers("/api/users/login", "/api/users/register","/api/rooms/available").permitAll()
                 // 对其他所有请求进行认证，即只有经过认证的用户才能访问
                 .anyRequest().authenticated()
                 .and()
