@@ -82,6 +82,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             log.info("当前用户：{}", username);
             log.info("当前用户角色: {}",role);
             // 创建包含权限信息的新的认证token
+            //当 JwtRequestFilter 成功验证JWT并从中提取用户信息和角色后，
+            //它将创建一个 UsernamePasswordAuthenticationToken，并将其设置到 SecurityContextHolder 中。
+            //SecurityContextHolder 持有当前线程的安全上下文（SecurityContext），其中包含当前用户的详细认证信息。
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
