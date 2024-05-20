@@ -15,8 +15,10 @@ import com.example.sebackend.service.IControlLogService;
 import com.example.sebackend.service.IUsageRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+//import com.example.sebackend.websocket.WebSocketSever;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,19 +39,21 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     RoomMapper roomMapper;
     @Autowired
     UserMapper userMapper;
-    @Autowired
-    private final ConcurrentHashMap<Integer,Room> roomMap;
-    @Autowired
-    private SimpMessagingTemplate template;
+//    @Autowired
+//    private SimpMessagingTemplate template;
     @Autowired
     IControlLogService controlLogService;
     @Autowired
     private IUsageRecordService usageRecordService;
+//    @Autowired
+//    private WebSocketSever webSocketSever;
+    private final ConcurrentHashMap<Integer,Room> roomMap;
 
-
-    public CentralUnitServiceImpl(ConcurrentHashMap<Integer, Room> roomMap) {
+    @Autowired
+    public CentralUnitServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomMap) {
         this.roomMap = roomMap;
     }
+
 
 
     //状态为0设置成失败,状态为1设置成成功
@@ -87,7 +91,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
      */
     private Room current_userRoom() {
         // 记录当前用户的日志信息
-        log.info("User:{}", BaseContext.getCurrentUser());
+//        log.info("User:{}", BaseContext.getCurrentUser());
         // 根据用户名获取用户ID
         int roomId = userMapper.getByUsername(BaseContext.getCurrentUser());
         // 根据房间ID获取房间对象
@@ -154,7 +158,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     public CentralUnit authen() {
         // 查找当前用户所在的房间
         Room room = current_userRoom();
-        log.info("room");
+//        log.info("room");
         // 设置房间的工作模式和目标温度为中央单元的默认模式和温度
         room.setMode(centralUnitMapper.getCentral().getMode());
         room.setTargetTemperature(centralUnitMapper.getCentral().getDefaultTemperature());
@@ -174,6 +178,8 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         // 写入开机使用记录
         UsageRecord usageRecord = new UsageRecord(room.getRoomId(), LocalDateTime.now());
         usageRecordService.save(usageRecord);
+        //添加到socket
+//        webSocketSever.subscribeToRoom(room.getRoomId(),sessionId);
         // 返回中央单元的信息
         return centralUnitMapper.getCentral();
     }
@@ -190,7 +196,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
 
         // 将房间状态封装成响应对象，发送到指定主题
         Response response = new Response(200, "从控机状态已更新", rooms);
-        template.convertAndSend("/air/RoomStatus", response);
+//        template.convertAndSend("/air/RoomStatus", response);
 
         // 返回最新的房间状态列表
         return roomMapper.list();

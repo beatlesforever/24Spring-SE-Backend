@@ -17,4 +17,5 @@ public interface IUserService extends IService<User> {
     UserDetails loadUserByUsername(String username);
 
     User getUserByRoomId(Integer roomId);
+
 }

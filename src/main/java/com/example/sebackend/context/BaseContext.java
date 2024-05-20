@@ -9,8 +9,8 @@ public class BaseContext {
 
     public static ThreadLocal<String> threadLocal = new ThreadLocal<>();
 
-    public static void setCurrentUser(String user) {
-        threadLocal.set(user);
+    public static void setCurrentUser(String username) {
+        threadLocal.set(username);
     }
 
     public static String getCurrentUser() {

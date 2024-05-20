@@ -23,4 +23,6 @@ public interface RoomMapper extends BaseMapper<Room> {
     void update( Room room);
 
     List<Room> list();
+
+
 }

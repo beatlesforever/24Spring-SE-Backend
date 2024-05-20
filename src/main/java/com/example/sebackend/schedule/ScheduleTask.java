@@ -1,23 +1,29 @@
 package com.example.sebackend.schedule;
 
+import com.example.sebackend.context.BaseContext;
 import com.example.sebackend.context.FrequencyConstant;
 import com.example.sebackend.entity.Response;
 import com.example.sebackend.entity.Room;
+import com.example.sebackend.entity.RoomVO;
+import com.example.sebackend.entity.User;
 import com.example.sebackend.service.ICentralUnitService;
 import com.example.sebackend.service.IControlLogService;
 import com.example.sebackend.service.IRoomService;
+import com.example.sebackend.service.IUserService;
+import com.example.sebackend.websocket.WebSocketRequest;
+import com.example.sebackend.websocket.WebSocketStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Component;
+//import websocket.WebSocketServer;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,9 +39,12 @@ public class ScheduleTask {
     private IRoomService roomService;
     @Autowired
     private ICentralUnitService centralUnitService;
+    @Autowired
+    private IUserService userService;
 
     private final ConcurrentHashMap<Integer, Room> roomMap;
     private final ConcurrentHashMap<Integer, Boolean> processingRooms;
+    private String username;
 
     @Autowired
     public ScheduleTask(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomQueue,
@@ -44,17 +53,22 @@ public class ScheduleTask {
         this.processingRooms = processingRooms;
     }
 
+//    @Autowired
+//    private SimpMessagingTemplate template;
     @Autowired
-    private SimpMessagingTemplate template;
+    private WebSocketStatus webSocketStatus;
+    @Autowired
+    private WebSocketRequest webSocketRequest;
+
 
     private static int count = 6;
     private static int frequency = 0;
     private static int currentFrequency = 0;
 
-    @Autowired
-    public void configureTemplate(SimpMessagingTemplate template) {
-        this.template.setDefaultDestination("/air/requestServing");
-    }
+//    @Autowired
+//    public void configureTemplate(SimpMessagingTemplate template) {
+//        this.template.setDefaultDestination("/air/requestServing");
+//    }
 
     @Autowired
     IControlLogService controlLogService;
@@ -119,13 +133,13 @@ public class ScheduleTask {
                         room.setServiceStatus("waiting");
                         roomService.updateRoom(room);
                         roomMap.put(roomId, room);
-                        System.out.printf("room %d is set in queue mode%n", roomId);
+//                        System.out.printf("room %d is set in queue mode%n", roomId);
                     }
                 }
                 count--;
                 if (count == 0) {
-                    System.out.printf("count: %d%n", count);
-                    System.out.println("adjustRoomTemperature");
+//                    System.out.printf("count: %d%n", count);
+//                    System.out.println("adjustRoomTemperature");
                     //如果房间的温度是on且从控机的请求已经被实现
                     if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
                         //根据空调的制冷或制热模式,高速变化0.6,中速变化0.5,低速变化0.4,
@@ -196,12 +210,12 @@ public class ScheduleTask {
         for (int i = 0; i < threadsToStart; i++) {
             AIR_CONDITIONER_EXECUTOR.execute(() -> {
                 System.out.printf("当前线程: %s%n", Thread.currentThread().getName());
-                Room room = roomService.current_userRoom(); // 获取当前用户的房间
+                Room room = roomService.current_userRoom(); // 获取请求用户的房间
 
                 // 如果找到房间，则处理该房间的请求
                 if (room != null) {
                     roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
-                        log.info("Processing room: {}", room);
+//                        log.info("Processing room: {}", room);
                         room.setStatus("on");
                         room.setServiceStatus("serving");
                         roomService.updateRoom(room);
@@ -209,7 +223,20 @@ public class ScheduleTask {
                         // 在处理完成后，清除该房间的处理标记
                         processingRooms.remove(id);
                         // 通过WebSocket通知前端请求已完成
-                        template.convertAndSend("/air/requestServing", new Response(200, "请求已完成", room));
+//                        log.info("username:{}",BaseContext.getCurrentUser());
+//                        log.info("room:{}",room.getRoomId());
+                        User user=userService.getUserByRoomId(room.getRoomId());
+                        if (user!=null) {
+                            username= user.getUsername();
+                            try {
+                                RoomVO roomVO = new RoomVO();
+                                //使用复制属性的方式，将room的属性复制到roomVO中
+                                BeanUtils.copyProperties(room, roomVO);
+                                webSocketRequest.sendMessage(username, new Response(200, "请求已完成", roomVO));
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
                         return null; // 从房间映射中移除已处理的房间
                     });
                 }
@@ -224,27 +251,39 @@ public class ScheduleTask {
      * 如果频率相同，则不进行操作。
      */
     @Scheduled(fixedRate = 1000) // 每秒扫描一次
-    public void updateRoomStatus() {
+    public void updateRoomStatus() throws JsonProcessingException {
         // 检查当前频率是否与更新频率一致，若一致则直接返回
-        if (FrequencyConstant.frequency == frequency) {
-            return;
-        } else {
+        if (FrequencyConstant.frequency != frequency) {
             // 若不一致，则更新频率并重置当前频率计数
             frequency = FrequencyConstant.frequency;
             currentFrequency = 0;
+        } else {
+            // 当累计的频率达到更新频率时，执行状态更新和通知操作
+            if (currentFrequency == frequency) {
+                // 获取从控机状态
+                List<Room> rooms = roomService.list();
+                //转换成roomVO
+                List<RoomVO> roomVOList = new ArrayList<>();
+                for (Room room : rooms) {
+                    RoomVO roomVO = new RoomVO();
+                    //使用复制属性的方式，将room的属性复制到roomVO中
+                    BeanUtils.copyProperties(room, roomVO);
+                    roomVOList.add(roomVO);
+                }
+                // 通知接口: /air/RoomStatus
+                Response response = new Response(200, "从控机状态已更新", roomVOList);
+                // 通过WebSocket通知前端
+                log.info("WebSocketStatus.sendMessage");
+                webSocketStatus.sendMessage("admin", response);
+                // 重置当前频率计数
+                currentFrequency = 0;
+//            template.convertAndSend("/air/RoomStatus", response);
+            }else {
+                currentFrequency++;
+            }
         }
 
-        // 对当前频率进行累计
-        currentFrequency++;
 
-        // 当累计的频率达到更新频率时，执行状态更新和通知操作
-        if (currentFrequency == frequency) {
-            // 获取从控机状态
-            List<Room> rooms = roomService.list();
-            // 通知接口: /air/RoomStatus
-            Response response = new Response(200, "从控机状态已更新", rooms);
-            template.convertAndSend("/air/RoomStatus", response);
-        }
 
     }
 

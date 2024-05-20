@@ -25,9 +25,10 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     RoomMapper roomMapper;
     private final ConcurrentHashMap<Integer, Room> roomMap;
     private final ConcurrentHashMap<Integer, Boolean> processingRooms;
+
     @Autowired
     public RoomServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomQueue,
-                        @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
+                           @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
         this.roomMap = roomQueue;
         this.processingRooms = processingRooms;
     }
@@ -82,12 +83,13 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     }
 
 
+
     /**
      * 更新房间信息。
      *
      * @param room 房间对象，包含需要更新的房间信息。
-     * 该方法通过调用roomMapper的updateById方法，根据房间对象的ID更新数据库中的房间信息。
-     * 无返回值，更新操作的结果直接由roomMapper处理。
+     *             该方法通过调用roomMapper的updateById方法，根据房间对象的ID更新数据库中的房间信息。
+     *             无返回值，更新操作的结果直接由roomMapper处理。
      */
     @Override
     public void updateRoom(Room room) {

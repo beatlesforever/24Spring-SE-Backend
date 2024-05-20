@@ -6,5 +6,5 @@ public class FrequencyConstant {
 
     //get the frequency
     @Getter
-    public static Integer frequency=2000;
+    public static Integer frequency=2;
 }
