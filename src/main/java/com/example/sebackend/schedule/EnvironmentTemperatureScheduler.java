@@ -4,10 +4,7 @@ import com.example.sebackend.context.EnvironmentConstant;
 import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.EnvironmentTemperature;
 import com.example.sebackend.entity.Room;
-import com.example.sebackend.service.ICentralUnitService;
-import com.example.sebackend.service.IEnvironmentTemperatureService;
-import com.example.sebackend.service.IRoomService;
-import com.example.sebackend.service.IUsageRecordService;
+import com.example.sebackend.service.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,6 +34,8 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     private boolean isSummerSeason;
     @Autowired
     IUsageRecordService usageRecordService;
+    @Autowired
+    private IControlLogService controlLogService;
 
     /**
      * 当组件属性设置完成后执行的初始化操作。
@@ -106,6 +105,8 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             roomService.updateById(room);
             //关机记录写入到数据库
             usageRecordService.saveEndRecord(room.getRoomId(), LocalDateTime.now());
+            //设置controlLog结束时间
+//            controlLogService.setLatestLog(room.getRoomId(), LocalDateTime.now(), true, room.getCurrentTemperature());
 
         }
     }

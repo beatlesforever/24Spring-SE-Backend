@@ -5,10 +5,7 @@ import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.entity.UsageRecord;
 import com.example.sebackend.entity.User;
-import com.example.sebackend.service.ICentralUnitService;
-import com.example.sebackend.service.IRoomService;
-import com.example.sebackend.service.IUsageRecordService;
-import com.example.sebackend.service.IUserService;
+import com.example.sebackend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +34,8 @@ public class RoomController {
     private ICentralUnitService centralUnitService;
     @Autowired
     private IUsageRecordService usageRecordService;
+    @Autowired
+    private IControlLogService controlLogService;
 
     private ResponseEntity<Map<String, Object>> createResponse(HttpStatus status, String message, Object data) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -160,6 +159,8 @@ public class RoomController {
         roomService.updateById(room);
         //写入关机记录
         usageRecordService.saveEndRecord(roomId, LocalDateTime.now());
+        //设置controlLog结束时间
+        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
 
         return createResponse(HttpStatus.OK, "从控机关闭成功", room);
     }

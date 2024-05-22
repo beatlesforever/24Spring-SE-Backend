@@ -22,5 +22,6 @@ public interface ControlLogMapper extends BaseMapper<ControlLog> {
     @Select("SELECT * FROM control_log WHERE room_id = #{roomId} AND is_completed = 1 AND request_time >= #{startTime} AND request_time <= #{endTime};")
     List<ControlLog> getFinishedLogs(@Param("roomId") int roomId,@Param("startTime") LocalDateTime startTime,@Param("endTime") LocalDateTime endTime);
 
+    @Select("SELECT * FROM control_log WHERE room_id = #{roomId} ORDER BY request_time DESC LIMIT 1;")
     ControlLog getLatestLog(int roomId);
 }

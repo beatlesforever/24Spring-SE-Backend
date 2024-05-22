@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 //import websocket.WebSocketServer;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -133,6 +134,8 @@ public class ScheduleTask {
                         room.setServiceStatus("waiting");
                         roomService.updateRoom(room);
                         roomMap.put(roomId, room);
+                        //设置controlLog结束
+                        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
 //                        System.out.printf("room %d is set in queue mode%n", roomId);
                     }
                 }
@@ -219,6 +222,7 @@ public class ScheduleTask {
                         room.setStatus("on");
                         room.setServiceStatus("serving");
                         roomService.updateRoom(room);
+                        // 创建新的记录控制日志
                         controlLogService.addControlLog(room);
                         // 在处理完成后，清除该房间的处理标记
                         processingRooms.remove(id);
