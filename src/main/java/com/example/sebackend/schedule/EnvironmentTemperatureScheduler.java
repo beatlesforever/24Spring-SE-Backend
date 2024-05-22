@@ -103,10 +103,8 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
 //            room.setStatus("standby");
             // 更新房间信息到数据库
             roomService.updateById(room);
-            //关机记录写入到数据库
-            usageRecordService.saveEndRecord(room.getRoomId(), LocalDateTime.now());
-            //设置controlLog结束时间
-//            controlLogService.setLatestLog(room.getRoomId(), LocalDateTime.now(), true, room.getCurrentTemperature());
+
+
 
         }
     }
