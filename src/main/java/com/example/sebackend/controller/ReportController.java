@@ -89,7 +89,10 @@ public class ReportController {
         List<ControlLog> controlLogs = controlLogService.getFinishedLogs(roomId, startTime, queryTime);
         // 查询时间范围内的该房间内的从控机使用记录次数
         int count = usageRecordService.getUsageRecordCount(roomId, startTime, queryTime);
-
+        // 空处理
+        if(controlLogs == null || controlLogs.isEmpty()){
+            return createResponse(HttpStatus.OK, "未查询到相关信息", null);
+        }
         // 累加报告期间总能量消耗和总费用
         float totalEnergyConsumed = 0.0f;
         float totalCost = 0.0f;
@@ -99,14 +102,15 @@ public class ReportController {
         }
 
         List<TempLog> logs = new ArrayList<>();
-        for(int i = 0;i < controlLogs.size();i++)
-        {
-            logs.get(i).setRequestTime(controlLogs.get(i).getRequestTime());
-            logs.get(i).setActualTemp(controlLogs.get(i).getActualTemp());
-            logs.get(i).setEndTemp(controlLogs.get(i).getEndTemp());
-            logs.get(i).setEndTime(controlLogs.get(i).getEndTime());
-            logs.get(i).setRequestedFanSpeed(controlLogs.get(i).getRequestedFanSpeed());
-            logs.get(i).setCost(controlLogs.get(i).getCost());
+        for (ControlLog controlLog : controlLogs) {
+            TempLog tempLog = new TempLog();
+            tempLog.setCost(controlLog.getCost());
+            tempLog.setActualTemp(controlLog.getActualTemp());
+            tempLog.setEndTemp(controlLog.getEndTemp());
+            tempLog.setEndTime(controlLog.getEndTime());
+            tempLog.setRequestedFanSpeed(controlLog.getRequestedFanSpeed());
+            tempLog.setRequestTime(controlLog.getRequestTime());
+            logs.add(tempLog);
         }
 
         //构建报告
