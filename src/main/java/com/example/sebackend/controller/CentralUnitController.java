@@ -45,6 +45,27 @@ public class CentralUnitController {
         responseBody.put("data", data);
         return new ResponseEntity<>(responseBody, status);
     }
+    /**
+     * 获取中央空调状态
+     * @return ResponseEntity<Map < String, Object>>
+     */
+    @GetMapping("/CentralUnit")
+    public ResponseEntity<Map<String, Object>> getCentralUnit() {
+        log.info("中央空调获取状态");
+        CentralUnit centralUnit = centralUnitService.getById(1);
+        return createResponse(HttpStatus.OK, "获取中央空调状态成功", centralUnit.getStatus());
+    }
+
+    /**
+     * 获取中央空调的刷新频率
+     * @return ResponseEntity<Map < String, Object>>
+     */
+    @GetMapping("/frequency")
+    public ResponseEntity<Map<String, Object>> getFrequency() {
+        log.info("获取中央空调的刷新频率");
+        CentralUnit centralUnit = centralUnitService.getById(1);
+        return createResponse(HttpStatus.OK, "获取中央空调的刷新频率成功", centralUnit.getFrequency());
+    }
 
     /**
      * 开启中央空调
