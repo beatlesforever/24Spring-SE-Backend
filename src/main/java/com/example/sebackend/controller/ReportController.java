@@ -3,6 +3,7 @@ package com.example.sebackend.controller;
 import com.example.sebackend.entity.ControlLog;
 import com.example.sebackend.entity.Report;
 import com.example.sebackend.entity.Room;
+import com.example.sebackend.entity.TempLog;
 import com.example.sebackend.service.IControlLogService;
 import com.example.sebackend.service.IReportService;
 import com.example.sebackend.service.IRoomService;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,13 +98,15 @@ public class ReportController {
             totalCost += controlLog.getCost();
         }
 
-        // 将从控机使用记录次数、每个温控请求起止时间温控请求的起止温度及风量消耗大小、每次温控请求所需费用转换成String形式
-        String details = "从控机使用记录次数："+count+"\n";
-        for(ControlLog controlLog : controlLogs){
-            details += "温控请求起止时间：" + controlLog.getRequestTime() + "至" + controlLog.getEndTime() + "\n";
-            details += "温控请求的起止温度：" + controlLog.getActualTemp() + "至" + controlLog.getRequestedTemp() + "\n";
-            details += "风量消耗大小：" + controlLog.getRequestedFanSpeed() + "\n";
-            details += "每次温控请求所需费用：" + controlLog.getCost() + "\n";
+        List<TempLog> logs = new ArrayList<>();
+        for(int i = 0;i < controlLogs.size();i++)
+        {
+            logs.get(i).setRequestTime(controlLogs.get(i).getRequestTime());
+            logs.get(i).setActualTemp(controlLogs.get(i).getActualTemp());
+            logs.get(i).setEndTemp(controlLogs.get(i).getEndTemp());
+            logs.get(i).setEndTime(controlLogs.get(i).getEndTime());
+            logs.get(i).setRequestedFanSpeed(controlLogs.get(i).getRequestedFanSpeed());
+            logs.get(i).setCost(controlLogs.get(i).getCost());
         }
 
         //构建报告
@@ -111,7 +115,8 @@ public class ReportController {
         report.setGenerationDate(queryTime);
         report.setTotalEnergyConsumed(totalEnergyConsumed);
         report.setTotalCost(totalCost);
-        report.setDetails(details);
+        report.setUsageTime(count);
+        report.setLog(logs);
         report.setCreator("admin");
 
         // 返回一个包含报表详细信息的响应实体
