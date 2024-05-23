@@ -39,21 +39,20 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     RoomMapper roomMapper;
     @Autowired
     UserMapper userMapper;
-//    @Autowired
+    //    @Autowired
 //    private SimpMessagingTemplate template;
     @Autowired
     IControlLogService controlLogService;
     @Autowired
     private IUsageRecordService usageRecordService;
-//    @Autowired
+    //    @Autowired
 //    private WebSocketSever webSocketSever;
-    private final ConcurrentHashMap<Integer,Room> roomMap;
+    private final ConcurrentHashMap<Integer, Room> roomMap;
 
     @Autowired
     public CentralUnitServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomMap) {
         this.roomMap = roomMap;
     }
-
 
 
     //状态为0设置成失败,状态为1设置成成功
@@ -165,7 +164,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         // 更新房间的最后活动时间
         room.setLastUpdate(LocalDateTime.now());
         // 比较目标温度和当前温度，以决定房间的状态
-        if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature()) )==0) {
+        if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature())) == 0) {
             room.setStatus("standby");
         } else {
             room.setStatus("on");
@@ -206,7 +205,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     public CentralUnit uodateFrequency(int frequency) {
         centralUnitMapper.updateFrequency(frequency);
         //修改配置
-        FrequencyConstant.frequency= frequency;
+        FrequencyConstant.frequency = frequency;
         return centralUnitMapper.getCentral();
     }
 
@@ -214,9 +213,9 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
      * 修改中央空调的工作模式。
      *
      * @param mode 指定中央空调的新工作模式。
-     * 该方法首先从中央单元管理器（centralUnitMapper）获取中央单元对象，
-     * 然后设置中央单元的工作模式为指定的模式，
-     * 最后更新中央单元对象在数据库中的状态。
+     *             该方法首先从中央单元管理器（centralUnitMapper）获取中央单元对象，
+     *             然后设置中央单元的工作模式为指定的模式，
+     *             最后更新中央单元对象在数据库中的状态。
      */
     @Override
     public void setMode(String mode) {
@@ -273,7 +272,11 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
             Response response = new Response(403, "中央空调已关机", room);
 //            template.convertAndSend("/air/requestServing", response);
             return response;
-        }else {
+        } else if (room.getStatus().equals(("off"))) {
+            //通知前端,房间已关机
+            Response response = new Response(403, "从控机未认证开机", room);
+            return response;
+        } else {
             //判断合理性
             if (room.getMode().equals("cooling")) {
                 if (targetTemperature < room.getCurrentTemperature() && targetTemperature <= 25 && targetTemperature >= 18) {
@@ -286,7 +289,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     //添加到记录中
                     //当前时间
                     LocalDateTime now = LocalDateTime.now();
-                    controlLogService.setLatestLog(room.getRoomId(), now ,true,room.getCurrentTemperature());
+                    controlLogService.setLatestLog(room.getRoomId(), now, true, room.getCurrentTemperature());
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
@@ -304,7 +307,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     //添加到记录中
                     //当前时间
                     LocalDateTime now = LocalDateTime.now();
-                    controlLogService.setLatestLog(room.getRoomId(), now ,true,room.getCurrentTemperature());
+                    controlLogService.setLatestLog(room.getRoomId(), now, true, room.getCurrentTemperature());
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);

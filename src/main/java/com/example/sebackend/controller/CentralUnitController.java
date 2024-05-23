@@ -196,11 +196,14 @@ public class CentralUnitController {
         Response re = centralUnitService.requests(targetTemperature, fanSpeed);
         Room room = (Room) re.getData();
         if (Objects.equals(re.getCode(), 403)) {
-            return createResponse(HttpStatus.BAD_REQUEST, "中央空调已关机", room);
+            //中央空调未开启或者房间未认证
+            return createResponse(HttpStatus.BAD_REQUEST, re.getMessage(), room);
         } else if (Objects.equals(re.getCode(), 404)) {
-            return createResponse(HttpStatus.BAD_REQUEST, "目标温度设置不合理", room);
+            //温度设置不合理
+            return createResponse(HttpStatus.BAD_REQUEST, re.getMessage(), room);
         } else {
-            return createResponse(HttpStatus.OK, "温控请求已接收", room);
+            //接收请求成功
+            return createResponse(HttpStatus.OK, re.getMessage(), room);
         }
     }
 
