@@ -58,7 +58,8 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
             if (latestLog.getEndTime() == null || latestLog.getEndTemp() == null) {
                 // 更新结束时间、完成状态、结束温度和持续时间
                 latestLog.setEndTime(endTime);
-                latestLog.setCompleted(isCompleted);
+//                latestLog.setCompleted(isCompleted);
+                latestLog.setCompleted(true);
                 latestLog.setEndTemp(endTemp);
                 // 计算持续时间（单位：秒）
                 int duration = (int) (endTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));

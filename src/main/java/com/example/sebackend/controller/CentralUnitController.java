@@ -50,22 +50,23 @@ public class CentralUnitController {
      * @return ResponseEntity<Map < String, Object>>
      */
     @GetMapping("/CentralUnit")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Map<String, Object>> getCentralUnit() {
         log.info("中央空调获取状态");
         CentralUnit centralUnit = centralUnitService.getById(1);
-        return createResponse(HttpStatus.OK, "获取中央空调状态成功", centralUnit.getStatus());
+        return createResponse(HttpStatus.OK, "获取中央空调状态成功", centralUnit);
     }
 
     /**
      * 获取中央空调的刷新频率
      * @return ResponseEntity<Map < String, Object>>
      */
-    @GetMapping("/frequency")
-    public ResponseEntity<Map<String, Object>> getFrequency() {
-        log.info("获取中央空调的刷新频率");
-        CentralUnit centralUnit = centralUnitService.getById(1);
-        return createResponse(HttpStatus.OK, "获取中央空调的刷新频率成功", centralUnit.getFrequency());
-    }
+//    @GetMapping("/frequency")
+//    public ResponseEntity<Map<String, Object>> getFrequency() {
+//        log.info("获取中央空调的刷新频率");
+//        CentralUnit centralUnit = centralUnitService.getById(1);
+//        return createResponse(HttpStatus.OK, "获取中央空调的刷新频率成功", centralUnit.getFrequency());
+//    }
 
     /**
      * 开启中央空调
@@ -96,11 +97,12 @@ public class CentralUnitController {
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Map<String, Object>> turnOff() {
         log.info("中央空调关闭");
-        CentralUnit centralUnit = centralUnitService.turnOff();
+        CentralUnit centralUnit = centralUnitService.getById(1);
         //如果中央空调已经关闭,返回已经关闭
         if (Objects.equals(centralUnit.getStatus(), "off")) {
             return createResponse(HttpStatus.BAD_REQUEST, "中央空调已关闭", centralUnit);
         }
+        centralUnit = centralUnitService.turnOff();
         return createResponse(HttpStatus.OK, "中央空调关闭成功", centralUnit);
     }
 
