@@ -55,6 +55,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        // 跳过无需认证的端点
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/api/users/login") || requestURI.equals("/api/users/register") || requestURI.equals("/api/rooms/available") || requestURI.startsWith("/webSocket/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // 从请求头中提取Authorization信息
         final String authorizationHeader = request.getHeader("Authorization");
 
