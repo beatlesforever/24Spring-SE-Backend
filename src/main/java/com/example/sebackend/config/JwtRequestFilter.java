@@ -64,10 +64,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             log.info("JWT认证：{}", authorizationHeader);
-            jwt = authorizationHeader.substring(7); // 提取JWT
-            username = JwtUtil.extractUsername(jwt); // 解析用户名
+            jwt = authorizationHeader.substring(7); // 提取JWT中的令牌
+            username = JwtUtil.extractUsername(jwt); // 解析JWT获取用户名
             log.info("JWT认证：{}", username);
-            BaseContext.setCurrentUser(username); // 设置当前用户
+            BaseContext.setCurrentUser(username); // 在上下文中设置当前用户
+        } else {
+            // 如果没有提供认证token，返回未授权响应
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: No Authentication token provided.");
+            return; // 终止请求处理
         }
 
         // 当username非空且SecurityContextHolder中没有认证信息时，执行认证流程
@@ -80,23 +85,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             // 设置当前用户的id
             BaseContext.setCurrentUser(username);
             log.info("当前用户：{}", username);
-            log.info("当前用户角色: {}",role);
-            // 创建包含权限信息的新的认证token
-            //当 JwtRequestFilter 成功验证JWT并从中提取用户信息和角色后，
-            //它将创建一个 UsernamePasswordAuthenticationToken，并将其设置到 SecurityContextHolder 中。
-            //SecurityContextHolder 持有当前线程的安全上下文（SecurityContext），其中包含当前用户的详细认证信息。
+            log.info("当前用户角色: {}", role);
+            // 创建新的认证token，包含权限信息
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken); // 更新认证信息
+            // 更新SecurityContextHolder中的认证信息
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
 
-        log.info("JWT认证：过滤器链继续");
         // 继续执行过滤器链
         chain.doFilter(request, response);
+        log.info("JWT认证：过滤器链继续");
     }
+
 
 
 }
