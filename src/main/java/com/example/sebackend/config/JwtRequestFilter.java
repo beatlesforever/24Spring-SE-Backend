@@ -57,7 +57,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         // 跳过无需认证的端点
         String requestURI = request.getRequestURI();
-        if (requestURI.equals("/api/users/login") || requestURI.equals("/api/users/register") || requestURI.equals("/api/rooms/available") || requestURI.startsWith("/webSocket/")) {
+        // 允许某些请求直接通过
+        if (requestURI.equals("/api/users/login") ||
+                requestURI.equals("/api/users/register") ||
+                requestURI.equals("/api/rooms/available") ||
+                requestURI.startsWith("/webSocket/") ||
+                requestURI.startsWith("/static/") ||  // 检查请求是否为静态资源
+                requestURI.startsWith("/resources/")) {
             chain.doFilter(request, response);
             return;
         }
