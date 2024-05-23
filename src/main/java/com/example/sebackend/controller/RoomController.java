@@ -103,7 +103,7 @@ public class RoomController {
         room.setServiceStatus("waiting");  // 设置默认服务状态为等待
         room.setEnergyConsumed(0.0f);  // 设置默认消耗能量为0
         room.setCostAccumulated(0.00f);  // 设置默认累计费用为0
-
+        room.setUnitId(1); //设置关联的中央空调ID为1
         // 保存房间到服务
         roomService.save(room);
         // 构建并返回响应实体
