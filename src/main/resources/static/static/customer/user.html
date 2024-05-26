@@ -118,8 +118,7 @@
         if (roomId && username && token) {
             document.getElementById('roomId').innerText = roomId;
             document.getElementById('username').innerText = username;
-            initialRoomData = JSON.parse(localStorage.getItem('roomInfo'));
-            displayRoomInfo(initialRoomData);
+            fetchRoomInfo(roomId, token);  // 在页面加载时立即获取最新的房间信息
             setInterval(() => fetchRoomInfo(roomId, token), 10000);  // 10秒刷新一次
         }
 
@@ -161,6 +160,8 @@
             .then(({ status, data }) => {
                 if (status === 200) {
                     displayRoomInfo(data.data);
+                    localStorage.setItem('roomInfo', JSON.stringify(data.data));
+                    initialRoomData = JSON.parse(localStorage.getItem('roomInfo'));
                 } else {
                     alert(data.message);
                 }
