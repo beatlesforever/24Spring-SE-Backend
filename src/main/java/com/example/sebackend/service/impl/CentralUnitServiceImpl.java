@@ -165,15 +165,21 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         room.setLastUpdate(LocalDateTime.now());
         // 比较目标温度和当前温度，以决定房间的状态
         if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature())) == 0) {
+            roomMapper.update(room);
             room.setStatus("standby");
         } else {
             room.setStatus("on");
             room.setServiceStatus("waiting");
+            roomMapper.update(room);
             // 将房间请求加入到请求队列中
             roomMap.put(room.getRoomId(), room);
+            //添加到记录中
+            //当前时间
+//            LocalDateTime now = LocalDateTime.now();
+//            controlLogService.setLatestLog(room.getRoomId(), now, true, room.getCurrentTemperature());
         }
         // 更新房间信息到数据库
-        roomMapper.update(room);
+//        roomMapper.update(room);
         // 写入开机使用记录
         UsageRecord usageRecord = new UsageRecord(room.getRoomId(), LocalDateTime.now());
         usageRecordService.save(usageRecord);
