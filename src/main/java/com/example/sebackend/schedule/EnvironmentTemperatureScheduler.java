@@ -5,11 +5,14 @@ import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.EnvironmentTemperature;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,6 +25,8 @@ import java.util.List;
  */
 @Component
 public class EnvironmentTemperatureScheduler implements InitializingBean {
+    private static final Logger log = LoggerFactory.getLogger(EnvironmentTemperatureScheduler.class);
+
     @Autowired
     private IEnvironmentTemperatureService environmentTemperatureService;
 
@@ -99,6 +104,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             room.setFanSpeed("medium");
             // 设置房间状态为"off"
             room.setStatus("off");
+            room.setServiceStatus("waiting");
             // 更新房间信息到数据库
             roomService.updateById(room);
 
@@ -179,8 +185,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
 
         // 更新所有房间的当前温度
         roomService.updateRoomTemperatures(currentTemperature);
-        System.out.println("环境温度为: " + currentTemperature);
-
+        log.info(String.format("环境温度为: %.1f", currentTemperature));
     }
 
 

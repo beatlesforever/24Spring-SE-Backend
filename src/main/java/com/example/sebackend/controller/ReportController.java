@@ -21,11 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author zhouhaoran
- * @date 2024/5/8
- * @project SE-backend
- */
+
 @RestController
 @Slf4j
 @RequestMapping("/api/reports")
