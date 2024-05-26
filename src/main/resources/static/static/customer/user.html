@@ -74,7 +74,8 @@
             <div class="temperature-control">
                 <h2>温度调节</h2>
                 <input type="number" id="temperatureInput" value="24">
-                <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay">24</span> °C</span>
+                <br>
+                <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
             </div>
             <div class="fan-speed-control">
                 <h2>风速调节</h2>
@@ -98,7 +99,7 @@
     <div id="dialogBox">
         <label for="dialogUsernameInput">请输入用户名:</label>
         <input type="text" id="dialogUsernameInput">
-        <label for="dialogPasswordInput">请输入身份证号:</label>
+        <label for="dialogPasswordInput">请输入密码:</label>
         <input type="password" id="dialogPasswordInput">
         <button id="dialogSubmit">提交</button>
         <button id="dialogCancel">取消</button>
@@ -200,8 +201,8 @@
         `;
         document.getElementById('energyConsumed').innerText = roomData.energyConsumed;
         document.getElementById('costAccumulated').innerText = roomData.costAccumulated;
-        document.getElementById('temperatureInput').value = roomData.targetTemperature;
-        document.getElementById('targetTemperatureDisplay').innerText = roomData.targetTemperature;
+        document.getElementById('temperatureInput').value = '';
+        document.getElementById('targetTemperatureDisplay').innerText = '';
         document.querySelectorAll('.fan-speed-button').forEach(button => {
             button.classList.remove('active');
             if (button.getAttribute('data-speed') === roomData.fanSpeed) {
@@ -243,7 +244,7 @@
         const roomId = localStorage.getItem('roomId');
         const token = localStorage.getItem('token');
 
-        if (targetTemperature == initialRoomData.targetTemperature && fanSpeed === initialRoomData.fanSpeed) {
+        if (targetTemperature === '' || targetTemperature == initialRoomData.targetTemperature && fanSpeed === initialRoomData.fanSpeed) {
             alert("没有检测到设置的改变！");
             return;
         }
@@ -293,7 +294,7 @@
             authenticateUser(username, password);
             hideDialog();
         } else {
-            alert('请输入用户名和身份证号');
+            alert('请输入用户名和密码');
         }
     }
 
@@ -322,7 +323,7 @@
                     // 认证成功，继续进行开机操作
                     powerToggleOn(roomId, token, responseData.data.token);
                 } else {
-                    alert('认证失败，请检查用户名和身份证号.');
+                    alert('认证失败，请检查用户名和密码.');
                 }
             })
             .catch(error => {
