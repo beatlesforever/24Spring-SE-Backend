@@ -149,19 +149,19 @@ public class ScheduleTask {
                         //设置从控机的温度变化
                         if (Objects.equals(room.getMode(), "cooling")) {
                             if (Objects.equals(room.getFanSpeed(), "high")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() - 0.6f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() - 0.6f, room.getTargetTemperature()));
                             } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() - 0.5f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() - 0.5f, room.getTargetTemperature()));
                             } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() - 0.4f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() - 0.4f, room.getTargetTemperature()));
                             }
                         } else if (Objects.equals(room.getMode(), "heating")) {
                             if (Objects.equals(room.getFanSpeed(), "high")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() + 0.6f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.6f, room.getTargetTemperature()));
                             } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() + 0.5f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.5f, room.getTargetTemperature()));
                             } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                                room.setCurrentTemperature(room.getCurrentTemperature() + 0.4f);
+                                room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.4f, room.getTargetTemperature()));
                             }
                         }
                         //设置从控机的能量消耗

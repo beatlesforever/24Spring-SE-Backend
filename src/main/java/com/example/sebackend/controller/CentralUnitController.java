@@ -125,7 +125,7 @@ public class CentralUnitController {
             return createResponse(HttpStatus.NOT_FOUND, "未找到指定房间", null);
         }
         // 房间已开启时的处理
-        if ("on".equals(room.getStatus())) {
+        if (!"off".equals(room.getStatus())) {
             return createResponse(HttpStatus.BAD_REQUEST, "从控机已经是开启状态", null);
         }
         // 用户身份验证
