@@ -56,7 +56,7 @@ public class ScheduleTask {
     @Autowired
     private WebSocketRequest webSocketRequest;
 
-
+    // 静态变量，用于控制定时任务执行的频率和计数
     private static int count = 6;
     private static int frequency = 0;
     private static int currentFrequency = 0;
