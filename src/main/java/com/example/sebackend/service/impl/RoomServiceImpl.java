@@ -113,7 +113,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
             // 判断房间当前状态是否为关闭或待机
             if ("off".equals(room.getStatus()) || "standby".equals(room.getStatus())) {
                 float currentTemp = room.getCurrentTemperature();
-                float temperatureChange = 0.2f;  // 设定温度变化的步长
+                float temperatureChange = 0.1f;  // 设定温度变化的步长
 
                 // 判断房间当前温度与环境温度的关系，并相应调整
                 if (currentTemp < environmentTemperature) {

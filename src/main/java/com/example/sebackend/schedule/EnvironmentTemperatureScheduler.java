@@ -5,11 +5,14 @@ import com.example.sebackend.entity.CentralUnit;
 import com.example.sebackend.entity.EnvironmentTemperature;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,6 +25,8 @@ import java.util.List;
  */
 @Component
 public class EnvironmentTemperatureScheduler implements InitializingBean {
+    private static final Logger log = LoggerFactory.getLogger(EnvironmentTemperatureScheduler.class);
+
     @Autowired
     private IEnvironmentTemperatureService environmentTemperatureService;
 
@@ -95,16 +100,13 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         for (Room room : rooms) {
             // 设置当前温度和目标温度为环境温度
             room.setCurrentTemperature(EnvironmentConstant.environmentTemperature);
-//            room.setCurrentTemperature(25.0f);
             room.setTargetTemperature(EnvironmentConstant.environmentTemperature);
             room.setFanSpeed("medium");
             // 设置房间状态为"off"
             room.setStatus("off");
-//            room.setStatus("standby");
+            room.setServiceStatus("waiting");
             // 更新房间信息到数据库
             roomService.updateById(room);
-
-
 
         }
     }
@@ -145,41 +147,47 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
 
     /**
      * 定时更新环境温度。
-     * 该方法每分钟执行一次，根据当前季节和时间调整环境温度，并保存新的温度值。
+     * 该方法每20s执行一次，根据当前季节和时间调整环境温度，并保存新的温度值。
      * 夏季温度会在白天上升，夜间下降，冬季则相反。
      * 并且温度值会受到限制，保持在合理的范围内。
+     *
+     * 本方法不接受参数，也不返回任何值。
+     * 利用定时任务框架（如Quartz或Spring的@Scheduled注解）每分钟调用以更新温度。
      */
-    @Scheduled(fixedRate = 60000) // 每1分钟执行一次
+    @Scheduled(fixedRate = 20000) // 每20秒执行一次
     public void updateEnvironmentTemperature() {
         LocalTime now = LocalTime.now(); // 获取当前时间
         int hour = now.getHour(); // 获取当前小时数
-        float temperatureChange = 0.1f; // 每分钟温度变化量
-        System.out.println("环境温度为: " + currentTemperature);
-        // 根据季节调整温度
+        float temperatureChange = 0.1f; // 每20秒温度变化量
+
+        // 根据当前季节调整温度，增加或减少温度，并限制在合理范围内
         if (isSummerSeason) {
-            // 夏季温度变化逻辑
+            // 夏季温度调整逻辑
             currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
             // 限制夏季温度范围
             currentTemperature = Math.min(Math.max(currentTemperature, 20.0f), 35.0f);
         } else {
-            // 冬季温度变化逻辑
+            // 冬季温度调整逻辑
             currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
             // 限制冬季温度范围
             currentTemperature = Math.min(Math.max(currentTemperature, -5.0f), 10.0f);
         }
 
-        // 同步更新全局环境温度常量
+        // 更新全局环境温度变量
         EnvironmentConstant.environmentTemperature = currentTemperature;
 
-        // 创建并保存环境温度记录
+        // 创建新的环境温度记录
         EnvironmentTemperature environmentTemperature = new EnvironmentTemperature();
         environmentTemperature.setTemperature(currentTemperature);
 
-        // 保存环境温度
+        // 保存或更新环境温度记录到数据库
         // environmentTemperatureService.save(environmentTemperature);
-        // 更新所有房间的温度
+
+        // 更新所有房间的当前温度
         roomService.updateRoomTemperatures(currentTemperature);
+        log.info(String.format("环境温度为: %.1f", currentTemperature));
     }
+
 
 }
 
