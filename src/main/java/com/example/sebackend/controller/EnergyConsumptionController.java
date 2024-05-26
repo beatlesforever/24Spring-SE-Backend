@@ -85,8 +85,8 @@ public class EnergyConsumptionController {
             LocalDateTime requestTime = controlLog.getRequestTime();
             // 通过查询时间和请求时间计算时间差，单位为分钟，如果不足一分钟则折算为小数
             Duration durationH = Duration.between(requestTime, queryTime);
-            float duration = durationH.toSeconds();
-            duration /= 60.0f;
+            long seconds = durationH.getSeconds();
+            float duration = seconds / 60.0f; // 转换为分钟
             // 计算当前累积能耗
             // 风速为high时，能耗为1.2倍，medium时为1倍，low时为0.8倍
             if (fanSpeed.equals("high")) {
