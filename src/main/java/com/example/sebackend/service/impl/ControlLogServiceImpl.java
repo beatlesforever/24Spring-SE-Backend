@@ -88,4 +88,10 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
         baseMapper.insert(controlLog);
     }
 
+    @Override
+    public ControlLog getLatestLog(int roomId) {
+        return baseMapper.getLatestLog(roomId);
+    }
+
+
 }
