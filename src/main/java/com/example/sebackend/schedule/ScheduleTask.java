@@ -181,7 +181,7 @@ public class ScheduleTask {
                         // 计算持续时间（单位：秒）
                         int duration = (int) (queryTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));
                         //监测room和log里面的风速是否一致
-                        log.info("结果{},room:{},lastLog{}", Objects.equals(room.getFanSpeed(), latestLog.getRequestedFanSpeed()), room.getFanSpeed(), latestLog.getRequestedFanSpeed());
+//                        log.info("结果{},room:{},lastLog{}", Objects.equals(room.getFanSpeed(), latestLog.getRequestedFanSpeed()), room.getFanSpeed(), latestLog.getRequestedFanSpeed());
                         if (Objects.equals(room.getFanSpeed(), "low")) {
                             totalEnergyConsumed += (float) (duration / 60 * 0.8);
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
@@ -190,7 +190,7 @@ public class ScheduleTask {
                             totalEnergyConsumed += (float) (duration / 60 * 1.2);
                         }
                         totalCost = (float) (totalEnergyConsumed * 5.0);
-                        log.info("room:{} totalEnergyConsumed:{} totalCost:{}", roomId, totalEnergyConsumed, totalCost);
+//                        log.info("room:{} totalEnergyConsumed:{} totalCost:{}", roomId, totalEnergyConsumed, totalCost);
                     }
                     room.setEnergyConsumed(totalEnergyConsumed);
                     room.setCostAccumulated(totalCost);
