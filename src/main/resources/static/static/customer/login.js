@@ -17,7 +17,7 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
     };
 
     // 发送 POST 请求到后端
-    fetch('/api/users/login', {
+    fetch('http://localhost:8080/api/users/login', {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
                 localStorage.setItem('token', globalToken);
                 localStorage.setItem('roomId', room);
                 localStorage.setItem('username', username);
-
+                localStorage.setItem('password', password);
                 // 获取房间信息
                 fetchRoomInfo(room, globalToken).then(() => {
                     if (responseData.data.role === "admin") {
@@ -58,7 +58,7 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
 });
 
 function fetchRoomInfo(roomId, token) {
-    return fetch(`/api/rooms/${roomId}`, {
+    return fetch(`http://localhost:8080/api/rooms/${roomId}`, {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token,

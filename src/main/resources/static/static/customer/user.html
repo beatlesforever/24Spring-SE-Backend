@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间信息</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+<header>
+    <div class="logo"></div>
+    <div class="user-info">
+        <span class="room-number">房间号: <span id="roomId"></span></span>
+        <span class="username">用户名: <span id="username"></span></span>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#">主页</a></li>
+            <li><a href="#">设置</a></li>
+            <li><a href="#">帮助</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="status-container">
+    <div class="room-status">
+        <div class="current-info">
+            <h1>房间信息</h1>
+            <div id="currentInfo"></div>
+            <button id="powerButton"></button>
+        </div>
+    </div>
+    <div class="energy-cost">
+        <h2>能耗和费用</h2>
+        <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
+        <p>总计消费: <span id="costAccumulated"></span> 元</p>
+    </div>
+</div>
+
+<div class="controls-container">
+    <div class="controls">
+        <div class="control-group">
+            <div class="temperature-control">
+                <h2>温度调节</h2>
+                <input type="number" id="temperatureInput" value="24">
+                <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay">24</span> °C</span>
+            </div>
+            <div class="fan-speed-control">
+                <h2>风速调节</h2>
+                <button class="fan-speed-button" data-speed="低">低</button>
+                <button class="fan-speed-button" data-speed="中">中</button>
+                <button class="fan-speed-button" data-speed="高">高</button>
+            </div>
+            <div class="buttons">
+                <button class="submit-button" id="submitButton">提交</button>
+                <button class="reset-button" id="resetButton">重置</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p class="status-info">系统正常</p>
+</footer>
+
+<script src="user.js"></script>
+</body>
+</html>

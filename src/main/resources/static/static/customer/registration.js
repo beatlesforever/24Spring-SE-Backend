@@ -4,18 +4,16 @@ document.getElementById("registerForm").addEventListener("submit", function(even
     var username = document.getElementById("username").value;
     var password = document.getElementById("password").value;
     var roomId = document.getElementById("roomId").value;
-    var role = document.getElementById("role").value;
 
     // 构建请求体数据
     var data = {
         username: username,
         password: password,
-        roomId: roomId,
-        role: role
+        roomId: roomId
     };
 
     // 发送 POST 请求到后端
-    fetch('/api/users/register', {
+    fetch('http://localhost:8080/api/users/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
