@@ -100,15 +100,13 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         for (Room room : rooms) {
             // 设置当前温度和目标温度为环境温度
             room.setCurrentTemperature(EnvironmentConstant.environmentTemperature);
-//            room.setTargetTemperature(EnvironmentConstant.environmentTemperature);
-            room.setTargetTemperature(18f);
+            room.setTargetTemperature(EnvironmentConstant.environmentTemperature);
             room.setFanSpeed("medium");
             // 设置房间状态为"off"
-            room.setStatus("on");
-            room.setServiceStatus("serving");
+            room.setStatus("off");
+            room.setServiceStatus("waiting");
             // 更新房间信息到数据库
             roomService.updateById(room);
-
         }
     }
 
