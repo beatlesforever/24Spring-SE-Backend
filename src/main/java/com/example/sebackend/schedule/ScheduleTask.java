@@ -189,7 +189,8 @@ public class ScheduleTask {
                         } else if (Objects.equals(room.getFanSpeed(), "high")) {
                             totalEnergyConsumed += (float) (duration / 60 * 1.2);
                         }
-                        totalCost += totalEnergyConsumed * 5;
+                        totalCost = (float) (totalEnergyConsumed * 5.0);
+                        log.info("room:{} totalEnergyConsumed:{} totalCost:{}", roomId, totalEnergyConsumed, totalCost);
                     }
                     room.setEnergyConsumed(totalEnergyConsumed);
                     room.setCostAccumulated(totalCost);
