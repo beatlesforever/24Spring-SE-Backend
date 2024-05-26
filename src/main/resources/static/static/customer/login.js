@@ -37,16 +37,12 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
                 localStorage.setItem('password', password);
                 // 获取房间信息
                 fetchRoomInfo(room, globalToken).then(() => {
-                    if (responseData.data.role === "admin") {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'user.html';
-                    }
+                    window.location.href = 'user.html';
                 });
             } else if (responseData.message === "房间号不匹配") {
                 alert('房间号不匹配，请检查你的房间号.');
-            } else if (responseData.message === "用户名或密码错误") {
-                alert('用户名或密码错误，请重试.');
+            } else if (responseData.message === "用户名或身份证号错误") {
+                alert('用户名或身份证号错误，请重试.');
             } else {
                 console.error('未知错误:', responseData.message);
             }
