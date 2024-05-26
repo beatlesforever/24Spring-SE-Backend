@@ -16,7 +16,6 @@ import com.example.sebackend.service.IUsageRecordService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 //import com.example.sebackend.websocket.WebSocketSever;
 
@@ -154,9 +153,11 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
      * @return CentralUnit 返回当前中央单元的信息。
      */
     @Override
-    public CentralUnit authen() {
+    public CentralUnit authen(int roomId) {
         // 查找当前用户所在的房间
         Room room = current_userRoom();
+        room = roomMapper.getId(roomId);
+
 //        log.info("room");
         // 设置房间的工作模式和目标温度为中央单元的默认模式和温度
         room.setMode(centralUnitMapper.getCentral().getMode());
@@ -164,7 +165,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         // 更新房间的最后活动时间
         room.setLastUpdate(LocalDateTime.now());
         // 比较目标温度和当前温度，以决定房间的状态
-        if (((room.getTargetTemperature()).compareTo(room.getCurrentTemperature())) == 0) {
+        if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) ==0) {
             roomMapper.update(room);
             room.setStatus("standby");
         } else {
@@ -183,8 +184,6 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         // 写入开机使用记录
         UsageRecord usageRecord = new UsageRecord(room.getRoomId(), LocalDateTime.now());
         usageRecordService.save(usageRecord);
-        //添加到socket
-//        webSocketSever.subscribeToRoom(room.getRoomId(),sessionId);
         // 返回中央单元的信息
         return centralUnitMapper.getCentral();
     }

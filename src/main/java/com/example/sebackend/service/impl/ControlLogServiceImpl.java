@@ -5,6 +5,7 @@ import com.example.sebackend.entity.ControlLog;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.ControlLogMapper;
 import com.example.sebackend.service.IControlLogService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.List;
  * @project SE-backend
  */
 @Service
+@Slf4j
 public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, ControlLog> implements IControlLogService {
 
     @Override
@@ -56,6 +58,7 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
         // 如果最新记录不为空，并且结束时间或结束温度为空，则进行更新
         if (latestLog!=null) {
             if (latestLog.getEndTime() == null || latestLog.getEndTemp() == null) {
+                log.info("房间{}设置最新日志的结束时间", roomId);
                 // 更新结束时间、完成状态、结束温度和持续时间
                 latestLog.setEndTime(endTime);
 //                latestLog.setCompleted(isCompleted);

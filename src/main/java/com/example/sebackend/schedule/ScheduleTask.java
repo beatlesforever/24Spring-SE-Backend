@@ -108,12 +108,10 @@ public class ScheduleTask {
                 //如果为standby模式,目标温度和当前温度差值为1,设置房间空调waiting,将请求加入到等待队列中
                 if (Objects.equals(room.getStatus(), "standby")) {
                     if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) >= 1) {
+                        room.setStatus("on");
                         room.setServiceStatus("waiting");
                         roomService.updateRoom(room);
                         roomMap.put(roomId, room);
-                        //设置controlLog结束
-                        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
-//                        System.out.printf("room %d is set in queue mode%n", roomId);
                     }
                 }
                 if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
@@ -139,8 +137,10 @@ public class ScheduleTask {
                     }
 
                     //判断当前温度和目标温度相同,将房间空调设置成standby模式;
-                    if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) < 1) {
+                    if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) <=0) {
                         room.setStatus("standby");
+                        //设置controlLog结束
+                        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
                     }
                     roomService.updateRoom(room);
                 }
@@ -208,9 +208,9 @@ public class ScheduleTask {
      * 使用线程池来并发处理队列中的请求，每次任务执行时，根据当前队列长度与最大线程数确定启动的线程数量。
      * 每个线程会获取当前用户的房间并尝试更新其状态。
      *
-     * @Scheduled 注解指定了任务的执行周期为5000毫秒。
+     * @Scheduled 注解指定了任务的执行周期为2000毫秒。
      */
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1000)
     public void checkSchedulerQueue() {
         // 计算当前队列中的房间数量
         AtomicInteger queueLength = new AtomicInteger(roomMap.size());

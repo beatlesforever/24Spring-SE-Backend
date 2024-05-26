@@ -144,7 +144,7 @@ public class CentralUnitController {
         if (Objects.equals(centralUnit.getStatus(), "off")) {
             return createResponse(HttpStatus.BAD_REQUEST, "中央空调未开启", null);
         } else {
-            centralUnit = centralUnitService.authen();
+            centralUnit = centralUnitService.authen(roomId);
         }
         return createResponse(HttpStatus.OK, "认证成功", centralUnit);
     }
