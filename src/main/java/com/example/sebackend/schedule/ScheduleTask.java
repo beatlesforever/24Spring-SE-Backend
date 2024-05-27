@@ -140,7 +140,11 @@ public class ScheduleTask {
                     if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) <=0) {
                         room.setStatus("standby");
                         //设置controlLog结束
-                        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
+                        LocalDateTime endTime = LocalDateTime.now();
+                        controlLogService.setLatestLog(roomId, endTime, true, room.getCurrentTemperature());
+                        //更新房间的累计费用
+                        endTime= LocalDateTime.now();
+                        roomService.setRoomCost(roomId, endTime);
                     }
                     roomService.updateRoom(room);
                 }
@@ -195,6 +199,9 @@ public class ScheduleTask {
                     room.setEnergyConsumed(totalEnergyConsumed);
                     room.setCostAccumulated(totalCost);
                     roomService.updateRoom(room);
+                }
+                else {
+                    roomService.setRoomCost(roomId, LocalDateTime.now());
                 }
             });
         }

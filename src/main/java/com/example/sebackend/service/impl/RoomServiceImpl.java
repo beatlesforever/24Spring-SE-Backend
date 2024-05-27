@@ -1,6 +1,7 @@
 package com.example.sebackend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.sebackend.entity.ControlLog;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.service.IRoomService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +25,8 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
 
     @Autowired
     RoomMapper roomMapper;
+    @Autowired
+    ControlLogServiceImpl controlLogService;
     private final ConcurrentHashMap<Integer, Room> roomMap;
     private final ConcurrentHashMap<Integer, Boolean> processingRooms;
 
@@ -82,6 +86,28 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         return room;
     }
 
+    @Override
+    public void setRoomCost(int roomId, LocalDateTime endTime) {
+        LocalDateTime startTime = LocalDateTime.of(1999, 1, 1, 0, 0, 0);
+        // 获取当前时间
+        LocalDateTime queryTime = LocalDateTime.now();
+        // 查询结束时间为当前请求时间
+
+        // 查询时间范围内的该房间内的已经完成的温控请求
+        List<ControlLog> controlLogs = controlLogService.getFinishedLogs(roomId, startTime, endTime);
+        // 累加报告期间总能量消耗和总费用
+        float totalEnergyConsumed = 0.0f;
+        float totalCost = 0.0f;
+        for (ControlLog controlLog : controlLogs) {
+            totalEnergyConsumed += controlLog.getEnergyConsumed();
+            totalCost += controlLog.getCost();
+        }
+        // 更新房间的累计费用
+        Room room = roomMapper.selectById(roomId);
+        room.setEnergyConsumed(totalEnergyConsumed);
+        room.setCostAccumulated(totalCost);
+        updateRoom(room);
+    }
 
 
     /**

@@ -44,8 +44,8 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     IControlLogService controlLogService;
     @Autowired
     private IUsageRecordService usageRecordService;
-    //    @Autowired
-//    private WebSocketSever webSocketSever;
+    @Autowired
+    private RoomServiceImpl roomService;
     private final ConcurrentHashMap<Integer, Room> roomMap;
 
     @Autowired
@@ -291,10 +291,11 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     room.setStatus("on");
                     room.setServiceStatus("waiting");
                     roomMapper.update(room);
-                    //添加到记录中
-                    //当前时间
-                    LocalDateTime now = LocalDateTime.now();
-                    controlLogService.setLatestLog(room.getRoomId(), now, true, room.getCurrentTemperature());
+                    //设置controlLog结束
+                    LocalDateTime endTime = LocalDateTime.now();
+                    controlLogService.setLatestLog(room.getRoomId(), endTime, true, room.getCurrentTemperature());
+                    //更新房间的累计费用
+                    roomService.setRoomCost(room.getRoomId(), endTime);
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);
@@ -309,10 +310,11 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     room.setServiceStatus("waiting");
                     room.setStatus("on");
                     roomMapper.update(room);
-                    //添加到记录中
-                    //当前时间
-                    LocalDateTime now = LocalDateTime.now();
-                    controlLogService.setLatestLog(room.getRoomId(), now, true, room.getCurrentTemperature());
+                    //设置controlLog结束
+                    LocalDateTime endTime = LocalDateTime.now();
+                    controlLogService.setLatestLog(room.getRoomId(), endTime, true, room.getCurrentTemperature());
+                    //更新房间的累计费用
+                    roomService.setRoomCost(room.getRoomId(), endTime);
                 } else {
                     //返回目标温度设置不合理
                     Response response = new Response(404, "目标温度设置不合理", room);

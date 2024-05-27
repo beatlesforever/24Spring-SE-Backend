@@ -3,6 +3,8 @@ package com.example.sebackend.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.sebackend.entity.Room;
 
+import java.time.LocalDateTime;
+
 /**
  * @author zhouhaoran
  * @date 2024/5/8
@@ -15,5 +17,8 @@ public interface IRoomService extends IService<Room> {
     void updateRoomTemperatures(float newTemperature);
 
     Room current_userRoom();
+
+    //设置房间的累计费用
+    void setRoomCost(int roomId, LocalDateTime endTime);
 
 }
