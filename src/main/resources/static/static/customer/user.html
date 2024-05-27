@@ -187,10 +187,6 @@
             'off': '关',
             'standby': '待机'
         };
-        const serviceStatusMap = {
-            'serving': '服务中',
-            'waiting': '等待中'
-        };
 
         document.getElementById('currentInfo').innerHTML = `
             <p>当前温度: ${roomData.currentTemperature} °C</p>
@@ -198,7 +194,7 @@
             <p>风速: ${fanSpeedMap[roomData.fanSpeed]}</p>
             <p>模式: ${modeMap[roomData.mode]}</p>
             <p>当前状态: ${statusMap[roomData.status]}</p>
-            <p>服务状态: ${serviceStatusMap[roomData.serviceStatus]}</p>
+            ${roomData.status === 'on' ? `<p>服务状态: ${roomData.serviceStatus === 'serving' ? '服务中' : '等待中'}</p>` : ''}
         `;
         document.getElementById('energyConsumed').innerText = roomData.energyConsumed;
         document.getElementById('costAccumulated').innerText = roomData.costAccumulated;
@@ -206,7 +202,7 @@
         document.getElementById('targetTemperatureDisplay').innerText = '';
         document.querySelectorAll('.fan-speed-button').forEach(button => {
             button.classList.remove('active');
-            if (button.getAttribute('data-speed') === roomData.fanSpeed) {
+            if (button.getAttribute('data-speed') === fanSpeedMap[roomData.fanSpeed]) {
                 button.classList.add('active');
             }
         });

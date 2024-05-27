@@ -159,9 +159,11 @@ public class RoomController {
         roomService.updateById(room);
         //写入关机记录
         usageRecordService.saveEndRecord(roomId, LocalDateTime.now());
-        //设置controlLog结束时间
-        controlLogService.setLatestLog(roomId, LocalDateTime.now(), true, room.getCurrentTemperature());
-
+        //设置controlLog结束
+        LocalDateTime endTime = LocalDateTime.now();
+        controlLogService.setLatestLog(roomId, endTime, true, room.getCurrentTemperature());
+        //更新房间的累计费用
+        roomService.setRoomCost(roomId, endTime);
         return createResponse(HttpStatus.OK, "从控机关闭成功", room);
     }
 

@@ -107,7 +107,6 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             room.setServiceStatus("waiting");
             // 更新房间信息到数据库
             roomService.updateById(room);
-
         }
     }
 
