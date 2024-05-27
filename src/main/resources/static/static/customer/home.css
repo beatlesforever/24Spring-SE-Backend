@@ -18,13 +18,20 @@ header {
     width: 100%;
 }
 
-.user-info, nav {
+.user-info{
     display: flex;
     align-items: center;
+    margin-right: auto;
 }
 
 .user-info span {
     margin-right: 20px;
+}
+
+nav{
+    display: flex;
+    align-items: center;
+    margin-left: auto;
 }
 
 nav ul {
@@ -50,7 +57,7 @@ nav ul li a {
 }
 
 .sidebar {
-    background-color: #007BFF;
+    background-color: #f0f0f0;
     color: white;
     min-width: 200px;
     padding-top: 20px;
@@ -62,7 +69,7 @@ nav ul li a {
     display: flex;
     flex-direction: column;
     cursor: pointer;
-    color: white;
+    color: #020000;
     padding: 10px;
 }
 
@@ -72,7 +79,7 @@ nav ul li a {
 }
 
 .tabs div.active {
-    background-color: #0056b3;
+    background-color: #dadada;
 }
 
 .content {
@@ -175,16 +182,6 @@ button {
 
 button:hover {
     background-color: #0056b3;
-}
-
-footer {
-    background-color: #007BFF;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
 }
 
 .status-info {
