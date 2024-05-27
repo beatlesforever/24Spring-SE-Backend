@@ -7,18 +7,32 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h2>登录</h2>
-        <form id="customerLoginForm">
-            <label for="username">用户名:</label>
-            <input type="text" id="username" name="username" required><br><br>
-            <label for="password">身份证号:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            <label for="room">房间号:</label>
-            <input type="text" id="room" name="room" required><br><br> <!-- 添加房间号输入框 -->
-            <button type="submit">登录</button>
-        </form>
+<header>
+    <div class="logo"></div>
+    <div class="user-info">
+        <span class="username">浩然酒店客户登录页面</span>
     </div>
-    <script src="login.js"></script>
+    <nav>
+        <ul>
+            <li><a href="index.html">主页</a></li>
+            <li><a href="#">设置</a></li>
+            <li><a href="#">帮助</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="container">
+    <h2>登录</h2>
+    <form id="customerLoginForm">
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">身份证号:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <label for="room">房间号:</label>
+        <input type="text" id="room" name="room" required><br><br> <!-- 添加房间号输入框 -->
+        <button type="submit">登录</button>
+    </form>
+</div>
+<script src="login.js"></script>
 </body>
 </html>

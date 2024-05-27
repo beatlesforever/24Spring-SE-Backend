@@ -24,7 +24,7 @@ document.getElementById("registerForm").addEventListener("submit", function(even
         .then(data => {
             if (data.message === "用户注册成功") {
                 console.log('Registration response:', data);
-                window.location.href = 'registration.html';
+                window.location.href = 'login.html';
                 // 注册成功消息
                 alert("注册成功");
             } else {
