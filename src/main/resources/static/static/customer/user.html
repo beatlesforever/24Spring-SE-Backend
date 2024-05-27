@@ -53,39 +53,58 @@
     </nav>
 </header>
 
-<div class="status-container">
-    <div class="room-status">
-        <div class="current-info">
-            <h1>房间信息</h1>
-            <div id="currentInfo"></div>
-            <button id="powerButton"></button>
+<div class="main-container">
+    <div class="sidebar">
+        <div class="tabs">
+            <div class="tab" data-tab="tab1">房间信息</div>
+            <div class="tab" data-tab="tab2">能耗和费用</div>
+            <div class="tab" data-tab="tab3">控制</div>
         </div>
     </div>
-    <div class="energy-cost">
-        <h2>能耗和费用</h2>
-        <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
-        <p>总计消费: <span id="costAccumulated"></span> 元</p>
-    </div>
-</div>
 
-<div class="controls-container">
-    <div class="controls">
-        <div class="control-group">
-            <div class="temperature-control">
-                <h2>温度调节</h2>
-                <input type="number" id="temperatureInput" value="24">
-                <br>
-                <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+    <div class="content">
+        <div id="tab1" class="tab-content">
+            <div class="status-container">
+                <div class="room-status">
+                    <div class="current-info">
+                        <h1>房间信息</h1>
+                        <div id="currentInfo"></div>
+                        <button id="powerButton"></button>
+                    </div>
+                </div>
             </div>
-            <div class="fan-speed-control">
-                <h2>风速调节</h2>
-                <button class="fan-speed-button" data-speed="低">低</button>
-                <button class="fan-speed-button" data-speed="中">中</button>
-                <button class="fan-speed-button" data-speed="高">高</button>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <div class="energy-cost center-content">
+                <h2>能耗和费用</h2>
+                <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
+                <p>总计消费: <span id="costAccumulated"></span> 元</p>
             </div>
-            <div class="buttons">
-                <button class="submit-button" id="submitButton">提交</button>
-                <button class="reset-button" id="resetButton">重置</button>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <div class="controls-container">
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="temperature-control">
+                            <h2>温度调节</h2>
+                            <input type="number" id="temperatureInput" value="24">
+                            <br>
+                            <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+                        </div>
+                        <div class="fan-speed-control">
+                            <h2>风速调节</h2>
+                            <button class="fan-speed-button" data-speed="低">低</button>
+                            <button class="fan-speed-button" data-speed="中">中</button>
+                            <button class="fan-speed-button" data-speed="高">高</button>
+                        </div>
+                        <div class="buttons">
+                            <button class="submit-button" id="submitButton">提交</button>
+                            <button class="reset-button" id="resetButton">重置</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -141,6 +160,24 @@
 
         document.getElementById('dialogSubmit').addEventListener('click', handleDialogSubmit);
         document.getElementById('dialogCancel').addEventListener('click', hideDialog);
+
+        // 初始化标签页
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const activeTab = document.querySelector('.tab.active');
+                if (activeTab) activeTab.classList.remove('active');
+                this.classList.add('active');
+
+                const activeContent = document.querySelector('.tab-content.active');
+                if (activeContent) activeContent.classList.remove('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // 默认激活第一个标签页
+        tabs[0].classList.add('active');
+        document.getElementById('tab1').classList.add('active');
     };
 
     function debounceSubmitSettings() {
