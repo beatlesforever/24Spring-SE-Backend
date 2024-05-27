@@ -35,6 +35,29 @@
         #dialogBox button {
             padding: 5px 10px;
         }
+
+        .temperature-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .temperature-input-container input {
+            width: 100px;
+            padding: 10px;
+            padding-top: 20px;
+            box-sizing: border-box;
+        }
+        .temperature-input-container label {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 12px;
+            color: #666;
+            pointer-events: none;
+        }
+        .temperature-input-container .unit {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -89,9 +112,13 @@
                     <div class="control-group">
                         <div class="temperature-control">
                             <h2>温度调节</h2>
-                            <input type="number" id="temperatureInput" value="24">
+                            <div class="temperature-input-container">
+                                <label for="temperatureInput">目标温度</label>
+                                <input type="number" id="temperatureInput" value="24">
+                                <span class="unit">℃</span>
+                            </div>
                             <br>
-                            <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+                            <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
                         </div>
                         <div class="fan-speed-control">
                             <h2>风速调节</h2>
@@ -101,7 +128,6 @@
                         </div>
                         <div class="buttons">
                             <button class="submit-button" id="submitButton">提交</button>
-                            <button class="reset-button" id="resetButton">重置</button>
                         </div>
                     </div>
                 </div>
@@ -114,7 +140,7 @@
     <div id="dialogBox">
         <label for="dialogUsernameInput">请输入用户名:</label>
         <input type="text" id="dialogUsernameInput">
-        <label for="dialogPasswordInput">请输入密码:</label>
+        <label for="dialogPasswordInput">请输入身份证号:</label>
         <input type="password" id="dialogPasswordInput">
         <button id="dialogSubmit">提交</button>
         <button id="dialogCancel">取消</button>
@@ -151,7 +177,6 @@
         });
 
         document.getElementById('submitButton').addEventListener('click', debounceSubmitSettings);
-        document.getElementById('resetButton').addEventListener('click', resetSettings);
         document.getElementById('powerButton').addEventListener('click', togglePower);
 
         document.getElementById('dialogSubmit').addEventListener('click', handleDialogSubmit);
@@ -303,12 +328,6 @@
             });
     }
 
-    function resetSettings() {
-        if (initialRoomData) {
-            displayRoomInfo(initialRoomData);
-        }
-    }
-
     function showDialog() {
         document.getElementById('dialogOverlay').style.display = 'block';
     }
@@ -324,7 +343,7 @@
             authenticateUser(username, password);
             hideDialog();
         } else {
-            alert('请输入用户名和密码');
+            alert('请输入用户名和身份证号');
         }
     }
 
@@ -353,7 +372,7 @@
                     // 认证成功，继续进行开机操作
                     powerToggleOn(roomId, token, responseData.data.token);
                 } else {
-                    alert('认证失败，请检查用户名和密码.');
+                    alert('认证失败，请检查用户名和身份证号.');
                 }
             })
             .catch(error => {
