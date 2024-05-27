@@ -1,189 +1,434 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间信息</title>
+    <link rel="stylesheet" href="home.css">
+    <style>
+        /* 自定义对话框的样式 */
+        #dialogOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        #dialogBox {
+            position: fixed;
+            background: white;
+            width: 300px;
+            border-radius: 10px;
+            padding: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #dialogBox input {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 5px;
+        }
+        #dialogBox button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo"></div>
+    <div class="user-info">
+        <span class="room-number">房间号: <span id="roomId"></span></span>
+        <span class="username">用户名: <span id="username"></span></span>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="index.html">主页</a></li>
+            <li><a href="#">设置</a></li>
+            <li><a href="#">帮助</a></li>
+        </ul>
+    </nav>
+</header>
 
-header {
-    background-color: #007BFF;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
+<div class="main-container">
+    <div class="sidebar">
+        <div class="tabs">
+            <div class="tab" data-tab="tab1">房间信息</div>
+            <div class="tab" data-tab="tab2">能耗和费用</div>
+            <div class="tab" data-tab="tab3">控制</div>
+        </div>
+    </div>
 
-.user-info{
-    display: flex;
-    align-items: center;
-    margin-right: auto;
-}
+    <div class="content">
+        <div id="tab1" class="tab-content">
+            <div class="status-container">
+                <div class="room-status">
+                    <div class="current-info">
+                        <h1>房间信息</h1>
+                        <div id="currentInfo"></div>
+                        <button id="powerButton"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-.user-info span {
-    margin-right: 20px;
-}
+        <div id="tab2" class="tab-content">
+            <div class="energy-cost center-content">
+                <h2>能耗和费用</h2>
+                <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
+                <p>总计消费: <span id="costAccumulated"></span> 元</p>
+            </div>
+        </div>
 
-nav{
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-}
+        <div id="tab3" class="tab-content">
+            <div class="controls-container">
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="temperature-control">
+                            <h2>温度调节</h2>
+                            <input type="number" id="temperatureInput" value="24">
+                            <br>
+                            <span class="target-temperature">目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+                        </div>
+                        <div class="fan-speed-control">
+                            <h2>风速调节</h2>
+                            <button class="fan-speed-button" data-speed="低">低</button>
+                            <button class="fan-speed-button" data-speed="中">中</button>
+                            <button class="fan-speed-button" data-speed="高">高</button>
+                        </div>
+                        <div class="buttons">
+                            <button class="submit-button" id="submitButton">提交</button>
+                            <button class="reset-button" id="resetButton">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-}
+<div id="dialogOverlay">
+    <div id="dialogBox">
+        <label for="dialogUsernameInput">请输入用户名:</label>
+        <input type="text" id="dialogUsernameInput">
+        <label for="dialogPasswordInput">请输入密码:</label>
+        <input type="password" id="dialogPasswordInput">
+        <button id="dialogSubmit">提交</button>
+        <button id="dialogCancel">取消</button>
+    </div>
+</div>
 
-nav ul li {
-    margin-left: 20px;
-}
+<script>
+    let initialRoomData;
+    let debounceTimer;
 
-nav ul li a {
-    color: white;
-    text-decoration: none;
-}
+    window.onload = function() {
+        const roomId = localStorage.getItem('roomId');
+        const username = localStorage.getItem('username');
+        const token = localStorage.getItem('token');
 
-.main-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
+        if (roomId && username && token) {
+            document.getElementById('roomId').innerText = roomId;
+            document.getElementById('username').innerText = username;
+            fetchRoomInfo(roomId, token);  // 在页面加载时立即获取最新的房间信息
+            setInterval(() => fetchRoomInfo(roomId, token), 10000);  // 10秒刷新一次
+        }
 
-.sidebar {
-    background-color: #f0f0f0;
-    color: white;
-    min-width: 200px;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-}
+        const temperatureInput = document.getElementById('temperatureInput');
+        temperatureInput.addEventListener('input', function() {
+            document.getElementById('targetTemperatureDisplay').innerText = this.value;
+        });
 
-.tabs {
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-    color: #020000;
-    padding: 10px;
-}
+        const fanSpeedButtons = document.querySelectorAll('.fan-speed-button');
+        fanSpeedButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                fanSpeedButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
 
-.tabs div {
-    padding: 15px;
-    text-align: center;
-}
+        document.getElementById('submitButton').addEventListener('click', debounceSubmitSettings);
+        document.getElementById('resetButton').addEventListener('click', resetSettings);
+        document.getElementById('powerButton').addEventListener('click', togglePower);
 
-.tabs div.active {
-    background-color: #dadada;
-}
+        document.getElementById('dialogSubmit').addEventListener('click', handleDialogSubmit);
+        document.getElementById('dialogCancel').addEventListener('click', hideDialog);
 
-.content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-}
+        // 初始化标签页
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const activeTab = document.querySelector('.tab.active');
+                if (activeTab) activeTab.classList.remove('active');
+                this.classList.add('active');
 
-.tab-content {
-    display: none;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+                const activeContent = document.querySelector('.tab-content.active');
+                if (activeContent) activeContent.classList.remove('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
 
-.tab-content.active {
-    display: block;
-}
+        // 默认激活第一个标签页
+        tabs[0].classList.add('active');
+        document.getElementById('tab1').classList.add('active');
+    };
 
-.status-container {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-}
+    function debounceSubmitSettings() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(submitSettings, 1000);
+    }
 
-.room-status, .energy-cost {
-    background-color: #fff;
-    padding: 40px; /* 增加内边距 */
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 60%; /* 增加宽度 */
-    margin: 20px auto; /* 居中对齐 */
-    display: flex;
-    flex-direction: column; /* 纵向排列子元素 */
-    align-items: center;
-}
+    function fetchRoomInfo(roomId, token) {
+        fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 200) {
+                    displayRoomInfo(data.data);
+                    localStorage.setItem('roomInfo', JSON.stringify(data.data));
+                    initialRoomData = JSON.parse(localStorage.getItem('roomInfo'));
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while fetching room information.");
+            });
+    }
 
+    function displayRoomInfo(roomData) {
+        const fanSpeedMap = {
+            'low': '低',
+            'medium': '中',
+            'high': '高'
+        };
+        const modeMap = {
+            'cooling': '制冷',
+            'heating': '制热'
+        };
+        const statusMap = {
+            'on': '开',
+            'off': '关',
+            'standby': '待机'
+        };
 
-.center-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
+        document.getElementById('currentInfo').innerHTML = `
+            <p>当前温度: ${roomData.currentTemperature} °C</p>
+            <p>当前目标温度: ${roomData.targetTemperature} °C</p>
+            <p>风速: ${fanSpeedMap[roomData.fanSpeed]}</p>
+            <p>模式: ${modeMap[roomData.mode]}</p>
+            <p>当前状态: ${statusMap[roomData.status]}</p>
+            ${roomData.status === 'on' ? `<p>服务状态: ${roomData.serviceStatus === 'serving' ? '服务中' : '等待中'}</p>` : ''}
+        `;
+        document.getElementById('energyConsumed').innerText = roomData.energyConsumed;
+        document.getElementById('costAccumulated').innerText = roomData.costAccumulated;
+        document.getElementById('temperatureInput').value = '';
+        document.getElementById('targetTemperatureDisplay').innerText = '';
+        document.querySelectorAll('.fan-speed-button').forEach(button => {
+            button.classList.remove('active');
+            if (button.getAttribute('data-speed') === fanSpeedMap[roomData.fanSpeed]) {
+                button.classList.add('active');
+            }
+        });
 
+        const powerButton = document.getElementById('powerButton');
+        if (roomData.status === 'off') {
+            powerButton.innerText = '开机';
+        } else if (roomData.status === 'on' || roomData.status === 'standby') {
+            powerButton.innerText = '关机';
+        } else {
+            powerButton.style.display = 'none';
+        }
+    }
 
-.controls-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
+    function submitSettings() {
+        const targetTemperature = document.getElementById('temperatureInput').value;
+        let fanSpeedChinese = initialRoomData.fanSpeed; // 默认使用初始房间信息中的风速
+        const activeFanSpeedButton = document.querySelector('.fan-speed-button.active');
 
-.controls {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 80%;
-}
+        if (activeFanSpeedButton) {
+            fanSpeedChinese = activeFanSpeedButton.getAttribute('data-speed'); // 如果有点击按钮设置风速，使用点击的风速
+        }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
+        const fanSpeedMap = {
+            '低': 'low',
+            '中': 'medium',
+            '高': 'high'
+        };
+        let fanSpeed = fanSpeedMap[fanSpeedChinese];
 
-.temperature-control, .fan-speed-control {
-    margin-top: 20px;
-}
+        // 检测风速是否为合法值，如果不是，则使用初始房间信息中的风速
+        if (!['low', 'medium', 'high'].includes(fanSpeed)) {
+            fanSpeed = initialRoomData.fanSpeed;
+        }
 
-.fan-speed-button {
-    padding: 5px 10px;
-    margin: 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    width: 30%;
-}
+        const roomId = localStorage.getItem('roomId');
+        const token = localStorage.getItem('token');
 
-.fan-speed-button.active {
-    background-color: #0056b3;
-}
+        if (targetTemperature === '' || targetTemperature == initialRoomData.targetTemperature && fanSpeed === initialRoomData.fanSpeed) {
+            alert("没有检测到设置的改变！");
+            return;
+        }
 
-button {
-    padding: 10px 20px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    width: 100%;
-}
+        const url = `http://localhost:8080/api/unit/requests?targetTemperature=${targetTemperature}&fanSpeed=${fanSpeed}`;
 
-button:hover {
-    background-color: #0056b3;
-}
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 200) {
+                    alert('设置已提交');
+                    fetchRoomInfo(roomId, token);
+                } else {
+                    alert(data.message || '提交设置失败');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while submitting settings.");
+            });
+    }
 
-.status-info {
-    margin: 0;
-}
+    function resetSettings() {
+        if (initialRoomData) {
+            displayRoomInfo(initialRoomData);
+        }
+    }
+
+    function showDialog() {
+        document.getElementById('dialogOverlay').style.display = 'block';
+    }
+
+    function hideDialog() {
+        document.getElementById('dialogOverlay').style.display = 'none';
+    }
+
+    function handleDialogSubmit() {
+        const username = document.getElementById('dialogUsernameInput').value;
+        const password = document.getElementById('dialogPasswordInput').value;
+        if (username && password) {
+            authenticateUser(username, password);
+            hideDialog();
+        } else {
+            alert('请输入用户名和密码');
+        }
+    }
+
+    function authenticateUser(username, password) {
+        const roomId = localStorage.getItem('roomId');
+        const token = localStorage.getItem('token');
+
+        const url = `http://localhost:8080/api/users/login`;
+        const requestBody = {
+            username: username,
+            password: password,
+            roomId: roomId
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => response.json())
+            .then(responseData => {
+                console.log('Login response:', responseData);
+                if (responseData.message === "登录成功") {
+                    // 认证成功，继续进行开机操作
+                    powerToggleOn(roomId, token, responseData.data.token);
+                } else {
+                    alert('认证失败，请检查用户名和密码.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('认证失败，请重试.');
+            });
+    }
+
+    function togglePower() {
+        const powerButton = document.getElementById('powerButton');
+        const roomId = localStorage.getItem('roomId');
+        const token = localStorage.getItem('token');
+
+        if (powerButton.innerText === '开机') {
+            showDialog();
+        } else {
+            powerToggleOff(roomId, token);
+        }
+    }
+
+    function powerToggleOn(roomId, token, authToken) {
+        const url = `http://localhost:8080/api/unit/${roomId}/authen`;
+
+        const requestBody = {
+            username: localStorage.getItem('username'),
+            password: localStorage.getItem('password')
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 200) {
+                    alert(data.message);  // 从控机开启成功
+                    fetchRoomInfo(roomId, token);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || "An error occurred while toggling power.");
+            });
+    }
+
+    function powerToggleOff(roomId, token) {
+        const url = `http://localhost:8080/api/rooms/${roomId}/stop`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 200) {
+                    alert('从控机已关闭');
+                    displayRoomInfo(data.data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || "An error occurred while toggling power.");
+            });
+    }
+</script>
+</body>
+</html>
