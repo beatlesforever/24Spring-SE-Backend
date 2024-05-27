@@ -4,9 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>房间信息</title>
-    <link rel="stylesheet" href="home.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* 自定义对话框的样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: auto;
+        }
+
+        .user-info span {
+            margin-right: 20px;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background-color: #f0f0f0;
+            min-width: 200px;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .tabs div {
+            padding: 15px;
+            text-align: center;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            margin-bottom: 5px;
+        }
+
+        .tabs div.active {
+            background-color: #dadada;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .status-container, .energy-cost, .controls-container {
+            width: 100%;
+            margin: 20px auto;
+        }
+
+        .room-status, .controls {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .temperature-control, .fan-speed-control {
+            margin-top: 20px;
+        }
+
+        .fan-speed-button {
+            padding: 5px 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        .fan-speed-button.active {
+            background-color: #0056b3;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         #dialogOverlay {
             position: fixed;
             top: 0;
@@ -16,6 +168,7 @@
             background: rgba(0, 0, 0, 0.5);
             display: none;
         }
+
         #dialogBox {
             position: fixed;
             background: white;
@@ -26,12 +179,14 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
         #dialogBox input {
             display: block;
             margin-bottom: 10px;
             width: 100%;
             padding: 5px;
         }
+
         #dialogBox button {
             padding: 5px 10px;
         }
@@ -41,12 +196,14 @@
             display: flex;
             align-items: center;
         }
+
         .temperature-input-container input {
             width: 100px;
             padding: 10px;
             padding-top: 20px;
             box-sizing: border-box;
         }
+
         .temperature-input-container label {
             position: absolute;
             top: 5px;
@@ -55,51 +212,50 @@
             color: #666;
             pointer-events: none;
         }
+
         .temperature-input-container .unit {
             margin-left: 10px;
         }
     </style>
 </head>
 <body>
-<header>
+<header class="bg-primary text-white p-3">
     <div class="logo"></div>
-    <div class="user-info">
-        <span class="room-number">房间号: <span id="roomId"></span></span>
+    <div class="user-info d-flex">
+        <span class="room-number mr-3">房间号: <span id="roomId"></span></span>
         <span class="username">用户名: <span id="username"></span></span>
     </div>
     <nav>
-        <ul>
-            <li><a href="index.html">主页</a></li>
-            <li><a href="#">设置</a></li>
-            <li><a href="#">帮助</a></li>
+        <ul class="nav">
+            <li class="nav-item"><a class="nav-link text-white" href="index.html">主页</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#">设置</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="#">帮助</a></li>
         </ul>
     </nav>
 </header>
 
-<div class="main-container">
-    <div class="sidebar">
+<div class="main-container d-flex">
+    <div class="sidebar bg-light p-3">
         <div class="tabs">
-            <div class="tab" data-tab="tab1">房间信息</div>
-            <div class="tab" data-tab="tab2">能耗和费用</div>
-            <div class="tab" data-tab="tab3">控制</div>
+            <div class="tab p-2" data-tab="tab1">房间信息</div>
+            <div class="tab p-2" data-tab="tab2">能耗和费用</div>
+            <div class="tab p-2" data-tab="tab3">控制</div>
         </div>
     </div>
 
-    <div class="content">
+    <div class="content flex-fill p-3">
         <div id="tab1" class="tab-content">
-            <div class="status-container">
-                <div class="room-status">
-                    <div class="current-info">
-                        <h1>房间信息</h1>
-                        <div id="currentInfo"></div>
-                        <button id="powerButton"></button>
-                    </div>
+            <div class="room-status">
+                <div class="current-info">
+                    <h1>房间信息</h1>
+                    <div id="currentInfo"></div>
+                    <button id="powerButton" class="btn btn-primary mt-3"></button>
                 </div>
             </div>
         </div>
 
         <div id="tab2" class="tab-content">
-            <div class="energy-cost center-content">
+            <div class="energy-cost">
                 <h2>能耗和费用</h2>
                 <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
                 <p>总计消费: <span id="costAccumulated"></span> 元</p>
@@ -107,28 +263,26 @@
         </div>
 
         <div id="tab3" class="tab-content">
-            <div class="controls-container">
-                <div class="controls">
-                    <div class="control-group">
-                        <div class="temperature-control">
-                            <h2>温度调节</h2>
-                            <div class="temperature-input-container">
-                                <label for="temperatureInput">目标温度</label>
-                                <input type="number" id="temperatureInput" value="24">
-                                <span class="unit">℃</span>
-                            </div>
-                            <br>
-                            <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+            <div class="controls">
+                <div class="control-group">
+                    <div class="temperature-control">
+                        <h2>温度调节</h2>
+                        <div class="temperature-input-container">
+                            <label for="temperatureInput">目标温度</label>
+                            <input type="number" class="form-control" id="temperatureInput" value="24">
+                            <span class="unit">℃</span>
                         </div>
-                        <div class="fan-speed-control">
-                            <h2>风速调节</h2>
-                            <button class="fan-speed-button" data-speed="低">低</button>
-                            <button class="fan-speed-button" data-speed="中">中</button>
-                            <button class="fan-speed-button" data-speed="高">高</button>
-                        </div>
-                        <div class="buttons">
-                            <button class="submit-button" id="submitButton">提交</button>
-                        </div>
+                        <br>
+                        <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+                    </div>
+                    <div class="fan-speed-control mt-3">
+                        <h2>风速调节</h2>
+                        <button class="fan-speed-button btn btn-primary m-1" data-speed="低">低</button>
+                        <button class="fan-speed-button btn btn-primary m-1" data-speed="中">中</button>
+                        <button class="fan-speed-button btn btn-primary m-1" data-speed="高">高</button>
+                    </div>
+                    <div class="buttons mt-3">
+                        <button class="submit-button btn btn-primary btn-block" id="submitButton">提交</button>
                     </div>
                 </div>
             </div>
@@ -139,11 +293,11 @@
 <div id="dialogOverlay">
     <div id="dialogBox">
         <label for="dialogUsernameInput">请输入用户名:</label>
-        <input type="text" id="dialogUsernameInput">
+        <input type="text" id="dialogUsernameInput" class="form-control">
         <label for="dialogPasswordInput">请输入身份证号:</label>
-        <input type="password" id="dialogPasswordInput">
-        <button id="dialogSubmit">提交</button>
-        <button id="dialogCancel">取消</button>
+        <input type="password" id="dialogPasswordInput" class="form-control">
+        <button id="dialogSubmit" class="btn btn-primary mt-2">提交</button>
+        <button id="dialogCancel" class="btn btn-secondary mt-2">取消</button>
     </div>
 </div>
 
@@ -159,14 +313,21 @@
         if (roomId && username && token) {
             document.getElementById('roomId').innerText = roomId;
             document.getElementById('username').innerText = username;
-            fetchRoomInfo(roomId, token);  // 在页面加载时立即获取最新的房间信息
-            setInterval(() => fetchRoomInfo(roomId, token), 10000);  // 10秒刷新一次
+            fetchRoomInfo(roomId, token);
+            temperature(20);
+            setInterval(() => fetchRoomInfo(roomId, token), 10000);
         }
 
         const temperatureInput = document.getElementById('temperatureInput');
         temperatureInput.addEventListener('input', function() {
             document.getElementById('targetTemperatureDisplay').innerText = this.value;
         });
+
+        const roomInfo = JSON.parse(localStorage.getItem('roomInfo'));
+        if (roomInfo) {
+            temperatureInput.value = roomInfo.targetTemperature;
+            document.getElementById('targetTemperatureDisplay').innerText = roomInfo.targetTemperature;
+        }
 
         const fanSpeedButtons = document.querySelectorAll('.fan-speed-button');
         fanSpeedButtons.forEach(button => {
@@ -182,7 +343,6 @@
         document.getElementById('dialogSubmit').addEventListener('click', handleDialogSubmit);
         document.getElementById('dialogCancel').addEventListener('click', hideDialog);
 
-        // 初始化标签页
         const tabs = document.querySelectorAll('.tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', function() {
@@ -196,7 +356,6 @@
             });
         });
 
-        // 默认激活第一个标签页
         tabs[0].classList.add('active');
         document.getElementById('tab1').classList.add('active');
     };
@@ -256,8 +415,6 @@
         `;
         document.getElementById('energyConsumed').innerText = roomData.energyConsumed;
         document.getElementById('costAccumulated').innerText = roomData.costAccumulated;
-        document.getElementById('temperatureInput').value = '';
-        document.getElementById('targetTemperatureDisplay').innerText = '';
         document.querySelectorAll('.fan-speed-button').forEach(button => {
             button.classList.remove('active');
             if (button.getAttribute('data-speed') === fanSpeedMap[roomData.fanSpeed]) {
@@ -275,13 +432,17 @@
         }
     }
 
+    function temperature(tem){
+        document.getElementById('temperatureInput').value = tem;
+        document.getElementById('targetTemperatureDisplay').innerText = tem;
+    }
     function submitSettings() {
         const targetTemperature = document.getElementById('temperatureInput').value;
-        let fanSpeedChinese = initialRoomData.fanSpeed; // 默认使用初始房间信息中的风速
+        let fanSpeedChinese = initialRoomData.fanSpeed;
         const activeFanSpeedButton = document.querySelector('.fan-speed-button.active');
 
         if (activeFanSpeedButton) {
-            fanSpeedChinese = activeFanSpeedButton.getAttribute('data-speed'); // 如果有点击按钮设置风速，使用点击的风速
+            fanSpeedChinese = activeFanSpeedButton.getAttribute('data-speed');
         }
 
         const fanSpeedMap = {
@@ -291,7 +452,6 @@
         };
         let fanSpeed = fanSpeedMap[fanSpeedChinese];
 
-        // 检测风速是否为合法值，如果不是，则使用初始房间信息中的风速
         if (!['low', 'medium', 'high'].includes(fanSpeed)) {
             fanSpeed = initialRoomData.fanSpeed;
         }
@@ -317,6 +477,7 @@
             .then(({ status, data }) => {
                 if (status === 200) {
                     alert('设置已提交');
+                    temperature(targetTemperature);
                     fetchRoomInfo(roomId, token);
                 } else {
                     alert(data.message || '提交设置失败');
@@ -369,7 +530,6 @@
             .then(responseData => {
                 console.log('Login response:', responseData);
                 if (responseData.message === "登录成功") {
-                    // 认证成功，继续进行开机操作
                     powerToggleOn(roomId, token, responseData.data.token);
                 } else {
                     alert('认证失败，请检查用户名和身份证号.');
@@ -412,7 +572,7 @@
             .then(response => response.json().then(data => ({ status: response.status, data })))
             .then(({ status, data }) => {
                 if (status === 200) {
-                    alert(data.message);  // 从控机开启成功
+                    alert(data.message);
                     fetchRoomInfo(roomId, token);
                 } else {
                     alert(data.message);

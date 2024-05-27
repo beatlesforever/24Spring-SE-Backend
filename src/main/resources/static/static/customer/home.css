@@ -18,7 +18,7 @@ header {
     width: 100%;
 }
 
-.user-info{
+.user-info {
     display: flex;
     align-items: center;
     margin-right: auto;
@@ -28,7 +28,7 @@ header {
     margin-right: 20px;
 }
 
-nav{
+nav {
     display: flex;
     align-items: center;
     margin-left: auto;
@@ -58,7 +58,7 @@ nav ul li a {
 
 .sidebar {
     background-color: #f0f0f0;
-    color: white;
+    color: black;
     min-width: 200px;
     padding-top: 20px;
     display: flex;
@@ -108,17 +108,16 @@ nav ul li a {
 
 .room-status, .energy-cost {
     background-color: #fff;
-    padding: 40px; /* 增加内边距 */
+    padding: 40px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 60%; /* 增加宽度 */
-    margin: 20px auto; /* 居中对齐 */
+    width: 60%;
+    margin: 20px auto;
     display: flex;
-    flex-direction: column; /* 纵向排列子元素 */
+    flex-direction: column;
     align-items: center;
 }
-
 
 .center-content {
     display: flex;
@@ -126,7 +125,6 @@ nav ul li a {
     align-items: center;
     height: 100%;
 }
-
 
 .controls-container {
     display: flex;
