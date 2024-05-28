@@ -21,13 +21,42 @@ document.getElementById("registerForm").addEventListener("submit", function(even
         .then(data => {
             if (data.message === "用户注册成功") {
                 console.log('Registration response:', data);
-                window.location.href = 'login.html';
-                alert("注册成功");
+                $('#successModal').modal('show');
             } else {
-                alert("注册失败，用户名可能已存在");
+                $('#errorModal').modal('show');
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            $('#errorModal').modal('show');
         });
+});
+
+document.getElementById("checkRoomsButton").addEventListener("click", function() {
+    fetch('http://localhost:8080/api/rooms/available')
+        .then(response => response.json())
+        .then(responseData => {
+            const data = responseData.data;
+            const roomsList = document.getElementById("roomsList");
+            roomsList.innerHTML = '';
+
+            data.forEach(room => {
+                const roomDiv = document.createElement("div");
+                roomDiv.classList.add("room");
+                roomDiv.textContent = `房间号: ${room.roomId}`;
+                roomsList.appendChild(roomDiv);
+            });
+
+            // 显示 Modal
+            $('#roomsModal').modal('show');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            $('#roomErrorModal').modal('show');
+        });
+});
+
+// 在成功注册模态框中添加确定按钮的事件监听器，以便在点击确定按钮时重定向到登录页面
+document.getElementById("successCloseButton").addEventListener("click", function() {
+    window.location.href = 'login.html';
 });

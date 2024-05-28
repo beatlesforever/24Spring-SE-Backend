@@ -30,15 +30,16 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
                 localStorage.setItem('password', password);
                 window.location.href = 'user.html';
             } else if (responseData.message === "房间号不匹配") {
-                alert('房间号不匹配，请检查你的房间号.');
+                $('#roomMismatchModal').modal('show');
             } else if (responseData.message === "用户名或身份证号错误") {
-                alert('用户名或身份证号错误，请重试.');
+                $('#credentialsErrorModal').modal('show');
             } else {
                 console.error('未知错误:', responseData.message);
+                $('#loginErrorModal').modal('show');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('登陆失败，请重试.');
+            $('#loginErrorModal').modal('show');
         });
 });

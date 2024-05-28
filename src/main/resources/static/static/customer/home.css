@@ -1,3 +1,4 @@
+/* home.css */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -58,7 +59,6 @@ nav ul li a {
 
 .sidebar {
     background-color: #f0f0f0;
-    color: black;
     min-width: 200px;
     padding-top: 20px;
     display: flex;
@@ -69,13 +69,15 @@ nav ul li a {
     display: flex;
     flex-direction: column;
     cursor: pointer;
-    color: #020000;
     padding: 10px;
 }
 
 .tabs div {
     padding: 15px;
     text-align: center;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    margin-bottom: 5px;
 }
 
 .tabs div.active {
@@ -86,65 +88,47 @@ nav ul li a {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .tab-content {
     display: none;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .tab-content.active {
     display: block;
 }
 
-.status-container {
-    display: flex;
-    justify-content: space-around;
+.status-container, .energy-cost, .controls-container {
     width: 100%;
-}
-
-.room-status, .energy-cost {
-    background-color: #fff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 60%;
     margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
-.center-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-.controls-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.controls {
-    background-color: #fff;
+.room-status, .controls {
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 80%;
 }
 
-.control-group {
+.current-info {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     width: 100%;
+ }
+
+.energy-label {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+}
+.control-group {
+    display: flex;
+    flex-direction: column;
     width: 100%;
 }
 
@@ -152,19 +136,15 @@ nav ul li a {
     margin-top: 20px;
 }
 
-.fan-speed-button {
-    padding: 5px 10px;
-    margin: 0;
-    border: none;
+.form-select {
+    width: 20%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    width: 30%;
-}
-
-.fan-speed-button.active {
-    background-color: #0056b3;
+    background-color: #fff;
+    font-size: 14px;
+    color: #333;
 }
 
 button {
@@ -175,13 +155,66 @@ button {
     background-color: #007BFF;
     color: white;
     cursor: pointer;
-    width: 100%;
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
-.status-info {
-    margin: 0;
+#dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+}
+
+#dialogBox {
+    position: fixed;
+    background: white;
+    width: 300px;
+    border-radius: 10px;
+    padding: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#dialogBox input {
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
+}
+
+#dialogBox button {
+    padding: 5px 10px;
+}
+
+.temperature-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.temperature-input-container input {
+    width: 100px;
+    padding: 10px;
+    padding-top: 28px;
+    box-sizing: border-box;
+}
+
+.temperature-input-container label {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    font-size: 12px;
+    color: #666;
+    pointer-events: none;
+}
+
+.temperature-input-container .unit {
+    margin-left: 10px;
 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.default.css">
 </head>
 <body>
 <header class="bg-primary text-white p-3">
@@ -15,31 +15,138 @@
     </div>
     <nav>
         <ul class="nav">
-            <li class="nav-item"><a class="nav-link text-white" href="index.html">主页</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="#">设置</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="login.html">主页</a></li>
             <li class="nav-item"><a class="nav-link text-white" href="#">帮助</a></li>
         </ul>
     </nav>
 </header>
 
-<div class="container mt-5">
-    <h2 class="mb-4">注册</h2>
-    <form id="registerForm">
-        <div class="form-group">
-            <label for="username">用户名:</label>
-            <input type="text" class="form-control" id="username" name="username" required>
+<div class="page login-page">
+    <div class="container d-flex align-items-center">
+        <div class="form-holder has-shadow">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="info d-flex align-items-center">
+                        <div class="content">
+                            <div class="logo">
+                                <h1>欢迎注册</h1>
+                            </div>
+                            <p>酒店温控管理系统</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 bg-white">
+                    <div class="form d-flex align-items-center">
+                        <div class="content">
+                            <form id="registerForm">
+                                <div class="form-group">
+                                    <label for="username">用户名:</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">身份证号:</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="roomId">房间号:</label>
+                                    <input type="text" class="form-control" id="roomId" name="roomId" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">注册</button>
+                                <button id="checkRoomsButton" type="button" class="btn btn-primary btn-block mb-3" data-toggle="modal" data-target="#roomsModal">查询空房间</button>
+                            </form>
+                            <br/>
+                            <small>已有账号?</small><a href="login.html" class="signup">&nbsp;登录</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="password">身份证号:</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="roomId">房间号:</label>
-            <input type="text" class="form-control" id="roomId" name="roomId" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">注册</button>
-    </form>
+    </div>
 </div>
+
+<!-- 空房间模态框 -->
+<div class="modal fade" id="roomsModal" tabindex="-1" aria-labelledby="roomsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roomsModalLabel">空房间列表</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="roomsList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 注册成功模态框 -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">注册成功</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                恭喜！注册成功。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="successCloseButton">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 注册失败模态框 -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">注册失败</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                注册失败，房间可能已被占用。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 查询空房间错误模态框 -->
+<div class="modal fade" id="roomErrorModal" tabindex="-1" aria-labelledby="roomErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roomErrorModalLabel">查询错误</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                查询空房间时发生错误，请稍后重试。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="registration.js"></script>
 </body>
 </html>
