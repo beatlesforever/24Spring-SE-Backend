@@ -18,41 +18,6 @@ body {
     overflow-x: hidden;
 }
 
-a,
-i,
-span {
-    display: inline-block;
-    text-decoration: none;
-    -webkit-transition: all 0.3s;
-    transition: all 0.3s;
-}
-
-a:hover, a:focus,
-i:hover,
-i:focus,
-span:hover,
-span:focus {
-    text-decoration: none;
-}
-
-section {
-    padding: 50px 0;
-}
-
-canvas {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-.container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 20px;
-    background: url('img/background.jpg') no-repeat center center fixed;
-    background-size: cover;
-}
 
 /* 页眉样式 */
 header {
@@ -88,6 +53,34 @@ nav ul li a {
 
 nav ul li a:hover {
     text-decoration: underline;
+}
+
+a,
+i,
+span {
+    display: inline-block;
+    text-decoration: none;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+a:hover, a:focus,
+i:hover,
+i:focus,
+span:hover,
+span:focus {
+    text-decoration: none;
+}
+
+section {
+    padding: 50px 0;
+}
+
+canvas {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .container-fluid {
@@ -1945,7 +1938,7 @@ input.input-material.is-invalid ~ label {
     height: 100%;
     display: block;
     z-index: -1;
-    background: url(../img/p_big3.jpg);
+    background: url('img/background.jpg') no-repeat center center fixed;
     background-size: cover;
     -webkit-filter: blur(10px);
     filter: blur(10px);

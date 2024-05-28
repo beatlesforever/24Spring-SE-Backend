@@ -48,45 +48,51 @@
 
         <div id="tab2" class="tab-content">
             <div class="energy-cost">
-                <div class="energy-label">
+                <div class="current-info">
                     <h2>能耗和费用</h2>
-                    <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
-                    <p>总计消费: <span id="costAccumulated"></span> 元</p>
+                    <div id="energyInfo">
+                        <p>能量消耗: <span id="energyConsumed"></span> kWh</p>
+                        <p>总计消费: <span id="costAccumulated"></span> 元</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="tab3" class="tab-content">
             <div class="controls">
-                <div class="control-group">
-                    <div class="temperature-control">
-                        <h2>温度调节</h2>
-                        <div class="temperature-input-container">
-                            <label for="temperatureInput">目标温度</label>
-                            <input type="number" class="form-control" id="temperatureInput" value="24">
-                            <span class="unit">℃</span>
+                <div class="current-info">
+                    <div class="control-group">
+                        <div class="adjustments">
+                            <h2>调整设置</h2>
+                            <div class="temperature-control">
+                                <label for="temperatureInput">温度调整</label>
+                                <div class="temperature-input-container">
+                                    <label for="temperatureInput">目标温度</label>
+                                    <input type="number" class="form-control" id="temperatureInput" value="24">
+                                    <span class="unit">℃</span>
+                                </div>
+                                <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
+                            </div>
+                            <br>
+                            <div class="fan-speed-control mt-3">
+                                <label for="fanSpeedSelect">风速调节</label>
+                                <select class="form-select" id="fanSpeedSelect">
+                                    <option value="低">低</option>
+                                    <option value="中">中</option>
+                                    <option value="高">高</option>
+                                </select>
+                            </div>
                         </div>
-                        <br>
-                        <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
-                    </div>
-                    <div class="fan-speed-control mt-3">
-                        <h2>风速调节</h2>
-                        <select class="form-select" id="fanSpeedSelect">
-                            <option value="低">低</option>
-                            <option value="中">中</option>
-                            <option value="高">高</option>
-                        </select>
-                    </div>
-                    <div class="buttons mt-3">
-                        <button class="submit-button btn btn-primary btn-block" id="submitButton">提交</button>
+                        <div class="buttons mt-3">
+                            <button class="submit-button btn btn-primary btn-block" id="submitButton">提交</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div id="dialogOverlay">
+    <div id="dialogOverlay">
     <div id="dialogBox">
         <label for="dialogUsernameInput">请输入用户名:</label>
         <input type="text" id="dialogUsernameInput" class="form-control">
@@ -103,13 +109,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="alertModalLabel">提示</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
             </div>
             <div class="modal-body" id="alertModalBody"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
@@ -121,9 +124,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="helpModalLabel">帮助</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
             </div>
             <div class="modal-body">
                 请拨打电话：123456
