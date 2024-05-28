@@ -64,23 +64,25 @@
                     <div class="control-group">
                         <div class="adjustments">
                             <h2>调整设置</h2>
-                            <div class="temperature-control">
-                                <label for="temperatureInput">温度调整</label>
-                                <div class="temperature-input-container">
-                                    <label for="temperatureInput">目标温度</label>
-                                    <input type="number" class="form-control" id="temperatureInput" value="24">
-                                    <span class="unit">℃</span>
+                            <div class="settings-container">
+                                <div class="temperature-control">
+                                    <label for="temperatureInput">温度调节</label>
+                                    <div class="temperature-input-container">
+                                        <label for="temperatureInput">目标温度</label>
+                                        <input type="number" class="form-control" id="temperatureInput" value="24">
+                                        <span class="unit">℃</span>
+                                    </div>
+                                    <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
                                 </div>
-                                <span class="target-temperature">当前目标温度: <span id="targetTemperatureDisplay"></span> °C</span>
-                            </div>
-                            <br>
-                            <div class="fan-speed-control mt-3">
-                                <label for="fanSpeedSelect">风速调节</label>
-                                <select class="form-select" id="fanSpeedSelect">
-                                    <option value="低">低</option>
-                                    <option value="中">中</option>
-                                    <option value="高">高</option>
-                                </select>
+                                <br>
+                                <div class="fan-speed-control mt-3">
+                                    <label for="fanSpeedSelect">风速调节</label>
+                                    <select class="form-select" id="fanSpeedSelect">
+                                        <option value="低">低</option>
+                                        <option value="中">中</option>
+                                        <option value="高">高</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="buttons mt-3">
