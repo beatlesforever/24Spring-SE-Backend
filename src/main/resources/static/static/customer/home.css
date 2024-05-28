@@ -183,9 +183,19 @@ nav ul li a {
     margin-bottom: 10px;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    background-color: #ddd; /* 设置箭头的背景颜色 */
+    color: #555;           /* 设置箭头的字体颜色 */
+    font-size: 12px;       /* 设置箭头的字体大小 */
+    padding: 3px;          /* 设置箭头的内边距 */
+}
+
+
 .temperature-input-container input {
-    width: calc(100% - 2em); /* 保持单位符号的空间 */
+    width: calc(100% - 3em); /* 保持单位符号的空间 */
     padding: 10px;
+    padding-right: 3em;
     padding-top: 28px;
     box-sizing: border-box;
     text-align: left; /* 使输入的数字靠右 */
@@ -193,7 +203,7 @@ nav ul li a {
 
 .temperature-input-container .unit {
     position: absolute;
-    right: 10px;
+    right: 1px;
     font-size: 20px;
 }
 
