@@ -224,52 +224,89 @@ public class ScheduleTask {
      */
     @Scheduled(fixedRate = 10000)
     public void checkSchedulerQueue() {
-        // 计算当前队列中的房间数量
-        AtomicInteger queueLength = new AtomicInteger(roomMap.size());
+        CentralUnit centralUnit = centralUnitService.getById(1);
+        if(centralUnit.getStatus().equals("on") || centralUnit.getStatus().equals("standby")){
+            // 计算当前队列中的房间数量
+            AtomicInteger queueLength = new AtomicInteger(roomMap.size());
 
-        // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
-        int threadsToStart = Math.min(queueLength.get(), MAX_THREADS);
+            // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
+            int threadsToStart = Math.min(queueLength.get(), MAX_THREADS);
 
-        // 启动线程池中的线程以处理队列中的请求
-        for (int i = 0; i < threadsToStart; i++) {
-            AIR_CONDITIONER_EXECUTOR.execute(() -> {
-                Room room = roomService.current_userRoom(); // 获取请求用户的房间
+            // 启动线程池中的线程以处理队列中的请求
+            for (int i = 0; i < threadsToStart; i++) {
+                AIR_CONDITIONER_EXECUTOR.execute(() -> {
+                    Room room = roomService.current_userRoom(); // 获取请求用户的房间
 
-                // 如果找到房间，则处理该房间的请求
-                if (room != null) {
-                    roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
-                        log.info("{} :正在处理 {} 房间的请求",LocalDateTime.now(),room.getRoomId());
-                        room.setStatus("on");
-                        room.setServiceStatus("serving");
-                        roomService.updateRoom(room);
-                        // 创建新的记录控制日志
-                        controlLogService.addControlLog(room);
-                        // 在处理完成后，清除该房间的处理标记
-                        processingRooms.remove(id);
-                        // 通过WebSocket通知前端请求已完成
+                    // 如果找到房间，则处理该房间的请求
+                    if (room != null) {
+                        centralUnit.setStatus("on");
+                        centralUnitService.updateById(centralUnit);
+                        roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
+                            log.info("{} :正在处理 {} 房间的请求",LocalDateTime.now(),room.getRoomId());
+                            room.setStatus("on");
+                            room.setServiceStatus("serving");
+                            roomService.updateRoom(room);
+                            // 创建新的记录控制日志
+                            controlLogService.addControlLog(room);
+                            // 在处理完成后，清除该房间的处理标记
+                            processingRooms.remove(id);
+                            // 通过WebSocket通知前端请求已完成
 //                        log.info("username:{}",BaseContext.getCurrentUser());
 //                        log.info("room:{}",room.getRoomId());
-                        User user = userService.getUserByRoomId(room.getRoomId());
-                        if (user != null) {
-                            username = user.getUsername();
-                            try {
-                                RoomVO roomVO = new RoomVO();
-                                //使用复制属性的方式，将room的属性复制到roomVO中
-                                BeanUtils.copyProperties(room, roomVO);
-                                webSocketRequest.sendMessage(username, new Response(200, "请求已完成", roomVO));
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
+                            User user = userService.getUserByRoomId(room.getRoomId());
+                            if (user != null) {
+                                username = user.getUsername();
+                                try {
+                                    RoomVO roomVO = new RoomVO();
+                                    //使用复制属性的方式，将room的属性复制到roomVO中
+                                    BeanUtils.copyProperties(room, roomVO);
+                                    webSocketRequest.sendMessage(username, new Response(200, "请求已完成", roomVO));
+                                } catch (JsonProcessingException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
-                        }
-                        return null; // 从房间映射中移除已处理的房间
-                    });
-                }else {
-                    //设置空调为standby状态
-                    centralUnitService.turnStandBy();
+                            return null; // 从房间映射中移除已处理的房间
+                        });
+                    }
+                });
+            }
+            if(threadsToStart == 0) {
+                // 只有所有房间不处于serving状态时，才设置空调为standby状态
+                if (allRoomsNotServing()) {
+                    centralUnit.setStatus("standby");
+                    centralUnitService.updateById(centralUnit);
+                }else{
+                    centralUnit.setStatus("on");
+                    centralUnitService.updateById(centralUnit);
                 }
-            });
+            }
         }
+
     }
+
+    /**
+     * 检查所有房间是否都不在服务状态。
+     *
+     * 该方法通过调用roomService.list()获取房间列表，并遍历每个房间，检查其服务状态和服务状态是否为"on"。
+     * 如果发现任何房间的服务状态为"serving"且状态为"on"，则认为至少有一个房间在服务状态，返回false。
+     * 如果所有房间都不在服务状态，则返回true。
+     *
+     * @return boolean 如果所有房间都不在服务状态，则返回true；如果至少有一个房间处于服务状态，则返回false。
+     */
+    private boolean allRoomsNotServing() {
+        // 获取房间列表
+        List<Room> rooms = roomService.list();
+        for (Room room : rooms) {
+            // 检查房间是否在服务状态
+            if ("serving".equals(room.getServiceStatus()) && "on".equals(room.getStatus())) {
+                return false;
+            }
+        }
+        // 所有房间都不在服务状态，返回true
+        return true;
+    }
+
+
 
 
     /**
@@ -313,15 +350,15 @@ public class ScheduleTask {
     }
 
     //检查调度队列为空时,设置空调为standby状态
-    @Scheduled(fixedRate = 1000) // 每秒扫描一次
-    public void checkQueue() {
-        if (roomMap.isEmpty()) {
-            CentralUnit centralUnit = centralUnitService.getById(1);
-            if (Objects.equals(centralUnit.getStatus(), "on")){
-                centralUnit.setStatus("standby");
-                centralUnitService.updateById(centralUnit);
-            }
-        }
-    }
+//    @Scheduled(fixedRate = 1000) // 每秒扫描一次
+//    public void checkQueue() {
+//        if (roomMap.isEmpty()) {
+//            CentralUnit centralUnit = centralUnitService.getById(1);
+//            if (Objects.equals(centralUnit.getStatus(), "on")){
+//                centralUnit.setStatus("standby");
+//                centralUnitService.updateById(centralUnit);
+//            }
+//        }
+//    }
 
 }

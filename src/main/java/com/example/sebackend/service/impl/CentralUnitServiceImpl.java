@@ -95,6 +95,15 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         return roomMapper.getId(roomId);
     }
 
+    private boolean allRoomsNotServing() {
+        List<Room> rooms = roomService.list();
+        for (Room room : rooms) {
+            if ("serving".equals(room.getServiceStatus()) && "on".equals(room.getStatus())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * 打开中央空调，设置默认工作状态和温度。
@@ -109,7 +118,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         CentralUnit centralUnit = centralUnitMapper.getCentral();
         // 设置中央空调为开启状态
         //检查调度队列长度为空设置standby,不为空设置on
-        if (roomMap.isEmpty()) {
+        if (allRoomsNotServing()) {
             centralUnit.setStatus("standby");
         } else {
             centralUnit.setStatus("on");
