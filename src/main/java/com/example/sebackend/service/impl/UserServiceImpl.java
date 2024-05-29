@@ -110,4 +110,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userMapper.selectOne(queryWrapper);
     }
 
+    /**
+     * 修改用户密码的方法。
+     *
+     * @param username 用户名。
+     * @param newPassword 新密码。
+     * @return 如果密码成功修改则返回true，否则返回false。
+     */
+    public boolean changePassword(String username, String newPassword) {
+        User user = findByUsername(username);
+        if (user != null) {
+            String encodedNewPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedNewPassword);
+            userMapper.updateById(user);
+            return true;
+        }
+        return false;
+    }
 }

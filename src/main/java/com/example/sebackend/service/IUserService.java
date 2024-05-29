@@ -18,4 +18,5 @@ public interface IUserService extends IService<User> {
 
     User getUserByRoomId(Integer roomId);
 
+    boolean changePassword(String username, String newPassword);
 }

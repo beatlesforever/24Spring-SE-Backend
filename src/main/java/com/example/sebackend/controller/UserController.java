@@ -89,5 +89,35 @@ public class UserController {
 
     }
 
+    /**
+     * 提供一个接口用于更改用户密码。
+     *
+     * @param passwordChangeRequest 包含密码更改所需信息的Map，其中包括：
+     *                               - username: 用户名
+     *                               - oldPassword: 旧密码
+     *                               - newPassword: 新密码
+     * @return 返回一个ResponseEntity，其中包含：
+     *         - 操作状态码：例如HTTP状态码，用于表示操作的成功或失败；
+     *         - 消息：关于操作结果的描述性信息；
+     *         - 可能的附加信息：根据具体实现，可能会返回一些额外的信息，本例中为null。
+     */
+    @PostMapping("/changePassword")
+    public ResponseEntity<Map<String, Object>> changePassword(@RequestBody Map<String, String> passwordChangeRequest) {
+        // 从请求中获取用户名和新密码
+        String username = passwordChangeRequest.get("username");
+        String newPassword = passwordChangeRequest.get("newPassword");
+
+        // 调用userService的changePassword方法尝试更改密码
+        boolean isPasswordChanged = userService.changePassword(username, newPassword);
+        if (isPasswordChanged) {
+            // 如果密码更改成功，则返回成功响应
+            return createResponse(HttpStatus.OK, "密码修改成功", null);
+        } else {
+            // 如果密码更改失败（例如，用户名错误），则返回失败响应
+            return createResponse(HttpStatus.BAD_REQUEST, "密码修改失败，用户名错误", null);
+        }
+    }
+
+
 
 }
