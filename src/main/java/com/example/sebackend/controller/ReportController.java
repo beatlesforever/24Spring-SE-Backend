@@ -101,6 +101,8 @@ public class ReportController {
         for (ControlLog controlLog : controlLogs) {
             TempLog tempLog = new TempLog();
             tempLog.setCost(controlLog.getCost());
+            tempLog.setDuration(controlLog.getDuration());
+            tempLog.setEnergyConsumed(controlLog.getEnergyConsumed());
             tempLog.setActualTemp(controlLog.getActualTemp());
             tempLog.setEndTemp(controlLog.getEndTemp());
             tempLog.setEndTime(controlLog.getEndTime());
