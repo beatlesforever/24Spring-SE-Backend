@@ -19,6 +19,9 @@ public interface ICentralUnitService extends IService<CentralUnit> {
 
     CentralUnit turnOff();
 
+    CentralUnit turnStandBy();
+
+
     CentralUnit authen(int roomId);
 
     List<Room> getStatus();

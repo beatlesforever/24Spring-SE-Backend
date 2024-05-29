@@ -263,6 +263,9 @@ public class ScheduleTask {
                         }
                         return null; // 从房间映射中移除已处理的房间
                     });
+                }else {
+                    //设置空调为standby状态
+                    centralUnitService.turnStandBy();
                 }
             });
         }
@@ -308,6 +311,18 @@ public class ScheduleTask {
         }
 
 
+    }
+
+    //检查调度队列为空时,设置空调为standby状态
+    @Scheduled(fixedRate = 1000) // 每秒扫描一次
+    public void checkQueue() {
+        if (roomMap.isEmpty()) {
+            CentralUnit centralUnit = centralUnitService.getById(1);
+            if (Objects.equals(centralUnit.getStatus(), "on")){
+                centralUnit.setStatus("standby");
+                centralUnitService.updateById(centralUnit);
+            }
+        }
     }
 
 }

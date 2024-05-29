@@ -108,7 +108,13 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         // 获取当前中央单位实例
         CentralUnit centralUnit = centralUnitMapper.getCentral();
         // 设置中央空调为开启状态
-        centralUnit.setStatus("on");
+        //检查调度队列长度为空设置standby,不为空设置on
+        if (roomMap.isEmpty()) {
+            centralUnit.setStatus("standby");
+        } else {
+            centralUnit.setStatus("on");
+        }
+//        centralUnit.setStatus("on");
         // 设置默认工作模式为制冷
         centralUnit.setMode("cooling");
         // 设置当前和默认温度为22度
@@ -140,6 +146,13 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         centralUnit.setStatus("off");
         // 更新数据库中的中央单元状态
         centralUnitMapper.update(centralUnit);
+        return centralUnit;
+    }
+
+    @Override
+    public CentralUnit turnStandBy() {
+        CentralUnit centralUnit = centralUnitMapper.getCentral();
+        centralUnit.setStatus("standby");
         return centralUnit;
     }
 
