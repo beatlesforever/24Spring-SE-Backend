@@ -135,6 +135,7 @@ public class ScheduleTask {
                             room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.05f, room.getTargetTemperature()));
                         }
                     }
+                    controlLogService.setLatestLogDuration(roomId);
 
                     //判断当前温度和目标温度相同,将房间空调设置成standby模式;
                     if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) <=0) {
@@ -186,14 +187,14 @@ public class ScheduleTask {
                     ControlLog latestLog = controlLogService.getLatestLog(roomId);
                     if (latestLog != null) {
                         queryTime = LocalDateTime.now(); // 更新当前时间，计算持续时间
-                        int duration = (int) (queryTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC)); // 计算持续时间（秒）
+                        int duration = latestLog.getDuration();
                         // 根据风速调整能源消耗
                         if (Objects.equals(room.getFanSpeed(), "low")) {
-                            totalEnergyConsumed += (float) (duration / 30 * 0.4);
+                            totalEnergyConsumed += (float) (duration / 60 * 0.8);
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            totalEnergyConsumed += (float) (duration / 30*0.5);
+                            totalEnergyConsumed += (float) (duration / 60 * 1.0);
                         } else if (Objects.equals(room.getFanSpeed(), "high")) {
-                            totalEnergyConsumed += (float) (duration / 30 * 0.6);
+                            totalEnergyConsumed += (float) (duration / 60 * 1.2);
                         }
                         // 计算总费用
                         totalCost = (float) (totalEnergyConsumed * 5.0);

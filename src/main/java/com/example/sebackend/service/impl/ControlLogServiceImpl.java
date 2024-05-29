@@ -6,11 +6,9 @@ import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.ControlLogMapper;
 import com.example.sebackend.service.IControlLogService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 
 /**
@@ -65,8 +63,26 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
                 latestLog.setCompleted(true);
                 latestLog.setEndTemp(endTemp);
                 // 计算持续时间（单位：秒）
-                int duration = (int) (endTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));
-                latestLog.setDuration(duration);
+//                int duration = (int) (endTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));
+//                latestLog.setDuration(duration);
+                // 根据ID更新日志记录
+                baseMapper.updateById(latestLog);
+            }
+        }
+    }
+
+    @Override
+    public void setLatestLogDuration(int roomId) {
+        // 查询房间号为roomId的最新日志记录
+        ControlLog latestLog = baseMapper.getLatestLog(roomId);
+        //System.out.println(latestLog);
+        // 如果最新记录不为空，并且结束时间或结束温度为空，则进行更新
+        if (latestLog != null) {
+            if (latestLog.getEndTime() == null || latestLog.getEndTemp() == null) {
+                log.info("房间{}设置最新日志的结束时间", roomId);
+                // 计算持续时间（单位：秒）
+                Integer duration = latestLog.getDuration();
+                latestLog.setDuration(duration + 10);
                 // 根据ID更新日志记录
                 baseMapper.updateById(latestLog);
             }

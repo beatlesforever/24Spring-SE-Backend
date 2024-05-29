@@ -23,6 +23,8 @@ public interface IControlLogService extends IService<ControlLog> {
     void setLatestLog(int roomId, LocalDateTime endTime, boolean isCompleted, Float endTemp);
 
 
+    void setLatestLogDuration(int roomId);
+
     void addControlLog(Room room);
     // 查询房间号为roomId的最新日志记录
     ControlLog getLatestLog(int roomId);

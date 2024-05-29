@@ -37,6 +37,7 @@ public class ControlLog {
         this.mode = mode;
         this.requestTime = requestTime;
         this.isCompleted = isCompleted;
+        this.duration = 0;
     }
     //无参构造函数
     public ControlLog() {

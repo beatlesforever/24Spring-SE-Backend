@@ -155,7 +155,7 @@
             document.getElementById('username').innerText = username;
             fetchRoomInfo(roomId, token);
             temperature(20);
-            setInterval(() => fetchRoomInfo(roomId, token), 10000);
+            setInterval(() => fetchRoomInfo(roomId, token), 5000);
         }
 
         const temperatureInput = document.getElementById('temperatureInput');
