@@ -109,4 +109,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 根据查询条件从数据库中查询一个用户并返回
         return userMapper.selectOne(queryWrapper);
     }
+
 }
