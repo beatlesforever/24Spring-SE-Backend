@@ -160,7 +160,7 @@ public class ScheduleTask {
      * 并对每个房间计算能源消耗和费用。此计算过程是异步执行的，通过ROOM_TEMPERATURE_EXECUTOR线程池进行。
      */
     @Async
-    @Scheduled(fixedRate = 60000, initialDelay = 1000)
+    @Scheduled(fixedRate = 30000, initialDelay = 1000)
     public void calculateEnergyAndCost() {
         List<Room> rooms = roomService.list(); // 获取所有房间信息
         for (Room room : rooms) {
@@ -189,11 +189,11 @@ public class ScheduleTask {
                         int duration = (int) (queryTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC)); // 计算持续时间（秒）
                         // 根据风速调整能源消耗
                         if (Objects.equals(room.getFanSpeed(), "low")) {
-                            totalEnergyConsumed += (float) (duration / 60 * 0.8);
+                            totalEnergyConsumed += (float) (duration / 30 * 0.4);
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            totalEnergyConsumed += (float) (duration / 60);
+                            totalEnergyConsumed += (float) (duration / 30*0.5);
                         } else if (Objects.equals(room.getFanSpeed(), "high")) {
-                            totalEnergyConsumed += (float) (duration / 60 * 1.2);
+                            totalEnergyConsumed += (float) (duration / 30 * 0.6);
                         }
                         // 计算总费用
                         totalCost = (float) (totalEnergyConsumed * 5.0);

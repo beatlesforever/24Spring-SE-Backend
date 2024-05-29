@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @Slf4j
-
 public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, CentralUnit> implements ICentralUnitService {
     @Autowired
     CentralUnitMapper centralUnitMapper;
