@@ -47,8 +47,9 @@ public class ControlLog {
     public float getCost(){
         //计算费用
         //一个单位能耗的费用为5元
-        float cost = getEnergyConsumed() * 5;
-        return cost;
+        float energyConsumed = getEnergyConsumed();
+        float cost = energyConsumed * 5;
+        return Math.round(cost * 100.0f) / 100.0f; // 保留两位小数
     }
 
     public float getEnergyConsumed(){
@@ -64,6 +65,6 @@ public class ControlLog {
         }else if (requestedFanSpeed.equals("low")){
             energyConsumed =  (durationMinute * 0.8f);
         }
-        return energyConsumed;
+        return Math.round(energyConsumed * 100.0f) / 100.0f; // 保留两位小数
     }
 }
