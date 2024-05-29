@@ -55,14 +55,14 @@ public class ControlLog {
         //计算能耗
         //风速为high时，能耗为1.2倍，medium时为1倍，low时为0.8倍
         //把持续时间转化为分钟
-        Float durationMinute = (float) (duration / 60);
+        Float durationMinute = (duration / 60.0f);
         float energyConsumed = 0;
         if (requestedFanSpeed.equals("high")){
-            energyConsumed = (float) (durationMinute * 1.2);
+            energyConsumed = (durationMinute * 1.2f);
         }else if (requestedFanSpeed.equals("medium")){
             energyConsumed = durationMinute;
         }else if (requestedFanSpeed.equals("low")){
-            energyConsumed = (float) (durationMinute * 0.8);
+            energyConsumed =  (durationMinute * 0.8f);
         }
         return energyConsumed;
     }
