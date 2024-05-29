@@ -222,7 +222,7 @@ public class ScheduleTask {
      *
      * @Scheduled 注解指定了任务的执行周期为2000毫秒。
      */
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 10000)
     public void checkSchedulerQueue() {
         // 计算当前队列中的房间数量
         AtomicInteger queueLength = new AtomicInteger(roomMap.size());
@@ -238,7 +238,7 @@ public class ScheduleTask {
                 // 如果找到房间，则处理该房间的请求
                 if (room != null) {
                     roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
-//                        log.info("Processing room: {}", room);
+                        log.info("{} :正在处理 {} 房间的请求",LocalDateTime.now(),room.getRoomId());
                         room.setStatus("on");
                         room.setServiceStatus("serving");
                         roomService.updateRoom(room);
@@ -300,7 +300,6 @@ public class ScheduleTask {
                 // 通知接口: /air/RoomStatus
                 Response response = new Response(200, "从控机状态已更新", roomVOList);
                 // 通过WebSocket通知前端
-                log.info("WebSocketStatus.sendMessage");
                 webSocketStatus.sendMessage("admin", response);
                 // 重置当前频率计数
                 currentFrequency = 0;

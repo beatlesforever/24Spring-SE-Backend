@@ -76,10 +76,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String jwt = null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            log.info("JWT认证：{}", authorizationHeader);
             jwt = authorizationHeader.substring(7); // 提取JWT中的令牌
             username = JwtUtil.extractUsername(jwt); // 解析JWT获取用户名
-            log.info("JWT认证：{}", username);
             BaseContext.setCurrentUser(username); // 在上下文中设置当前用户
         } else {
             // 如果没有提供认证token，返回未授权响应
@@ -97,8 +95,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             // 设置当前用户的id
             BaseContext.setCurrentUser(username);
-            log.info("当前用户：{}", username);
-            log.info("当前用户角色: {}", role);
             // 创建新的认证token，包含权限信息
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
             UsernamePasswordAuthenticationToken authenticationToken =
@@ -111,7 +107,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // 继续执行过滤器链
         chain.doFilter(request, response);
-        log.info("JWT认证：过滤器链继续");
     }
 
 

@@ -52,7 +52,6 @@ public class CentralUnitController {
     @GetMapping("/CentralUnit")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Map<String, Object>> getCentralUnit() {
-        log.info("中央空调获取状态");
         CentralUnit centralUnit = centralUnitService.getById(1);
         return createResponse(HttpStatus.OK, "获取中央空调状态成功", centralUnit);
     }
@@ -161,7 +160,6 @@ public class CentralUnitController {
     @PreAuthorize("hasAuthority('admin')")
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
-        log.info("中央空调获取从控机状态");
         List<Room> rooms = centralUnitService.getStatus();
         return createResponse(HttpStatus.OK, "获取从控机状态成功", rooms);
     }
@@ -175,7 +173,6 @@ public class CentralUnitController {
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/frequency")
     public ResponseEntity<Map<String, Object>> setFrequency(@RequestParam int frequency) {
-        log.info("设置刷新频率");
         CentralUnit centralUnit = centralUnitService.uodateFrequency(frequency);
         return createResponse(HttpStatus.OK, "设置刷新频率成功", centralUnit);
     }

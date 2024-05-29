@@ -70,9 +70,9 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             isSummerSeason = true;
             // 判断当前时间是否在白天
             if (hour >= 6 && hour < 18) {
-                currentTemperature = 20.0f; // 夏季白天起始温度
+                currentTemperature = 25.0f; // 夏季白天起始温度
             } else {
-                currentTemperature = 35.0f; // 夏季夜晚起始温度
+                currentTemperature = 40.0f; // 夏季夜晚起始温度
             }
         } else { // 冬季月份10月到3月
             isSummerSeason = false;
@@ -131,7 +131,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     @Scheduled(cron = "0 0 0 1 4 ?") // 4月1日凌晨0点开始夏季
     public void startSummerSeason() {
         isSummerSeason = true;
-        currentTemperature = 20.0f; // 设置夏季起始温度
+        currentTemperature = 25.0f; // 设置夏季起始温度
         // 同步更新全局环境温度常量
         EnvironmentConstant.environmentTemperature = currentTemperature;
     }
@@ -164,7 +164,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
             // 夏季温度调整逻辑
             currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
             // 限制夏季温度范围
-            currentTemperature = Math.min(Math.max(currentTemperature, 20.0f), 35.0f);
+            currentTemperature = Math.min(Math.max(currentTemperature, 25.0f), 40.0f);
         } else {
             // 冬季温度调整逻辑
             currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
