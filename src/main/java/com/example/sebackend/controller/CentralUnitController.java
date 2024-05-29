@@ -118,6 +118,7 @@ public class CentralUnitController {
     @PostMapping("/{roomId}/authen")
     public ResponseEntity<Map<String, Object>> authen(@PathVariable int roomId, @RequestBody User loginuser) {
         log.info("从控机认证");
+        System.out.println(loginuser);
         // 根据房间ID获取房间信息
         Room room = roomService.getById(roomId);
         // 房间不存在时的处理

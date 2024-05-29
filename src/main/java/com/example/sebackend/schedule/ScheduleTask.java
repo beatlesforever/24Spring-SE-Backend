@@ -154,38 +154,40 @@ public class ScheduleTask {
         }
     }
 
+    /**
+     * 定时计算各个房间的能源消耗和费用。
+     * 该方法使用@Scheduled注解，表示其为一个定时任务，固定间隔执行。通过调用roomService列出所有房间，
+     * 并对每个房间计算能源消耗和费用。此计算过程是异步执行的，通过ROOM_TEMPERATURE_EXECUTOR线程池进行。
+     */
     @Async
     @Scheduled(fixedRate = 60000, initialDelay = 1000)
     public void calculateEnergyAndCost() {
-        List<Room> rooms = roomService.list();
+        List<Room> rooms = roomService.list(); // 获取所有房间信息
         for (Room room : rooms) {
             final int roomId = room.getRoomId();
             ROOM_TEMPERATURE_EXECUTOR.execute(() -> {
-                Thread.currentThread().setName("Room-cost-" + roomId);
+                Thread.currentThread().setName("Room-cost-" + roomId); // 设置当前线程名称，便于日志定位
+                // 只有房间状态为开启且服务状态为服务中时，才进行能源和费用的计算
                 if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
-                    LocalDateTime startTime = LocalDateTime.of(1999, 1, 1, 0, 0, 0);
-                    // 获取当前时间
-                    LocalDateTime queryTime = LocalDateTime.now();
-                    // 查询结束时间为当前请求时间
+                    LocalDateTime startTime = LocalDateTime.of(1999, 1, 1, 0, 0, 0); // 设置查询的起始时间
+                    LocalDateTime queryTime = LocalDateTime.now(); // 获取当前时间作为查询的结束时间
 
-                    // 查询时间范围内的该房间内的已经完成的温控请求
+                    // 查询该房间在指定时间范围内的已完成的温控请求
                     List<ControlLog> controlLogs = controlLogService.getFinishedLogs(roomId, startTime, queryTime);
-                    // 累加报告期间总能量消耗和总费用
+                    // 计算这些温控请求的总能量消耗和总费用
                     float totalEnergyConsumed = 0.0f;
                     float totalCost = 0.0f;
                     for (ControlLog controlLog : controlLogs) {
                         totalEnergyConsumed += controlLog.getEnergyConsumed();
                         totalCost += controlLog.getCost();
                     }
-                    //分钟消耗的能量
-                    //根据风速将energyConsumed(+0.8,1,1.2),
+
+                    // 根据当前房间的风速，计算持续时间内的额外能源消耗
                     ControlLog latestLog = controlLogService.getLatestLog(roomId);
-                    if (latestLog!=null) {
-                        queryTime = LocalDateTime.now();
-                        // 计算持续时间（单位：秒）
-                        int duration = (int) (queryTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));
-                        //监测room和log里面的风速是否一致
-//                        log.info("结果{},room:{},lastLog{}", Objects.equals(room.getFanSpeed(), latestLog.getRequestedFanSpeed()), room.getFanSpeed(), latestLog.getRequestedFanSpeed());
+                    if (latestLog != null) {
+                        queryTime = LocalDateTime.now(); // 更新当前时间，计算持续时间
+                        int duration = (int) (queryTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC)); // 计算持续时间（秒）
+                        // 根据风速调整能源消耗
                         if (Objects.equals(room.getFanSpeed(), "low")) {
                             totalEnergyConsumed += (float) (duration / 60 * 0.8);
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
@@ -193,12 +195,14 @@ public class ScheduleTask {
                         } else if (Objects.equals(room.getFanSpeed(), "high")) {
                             totalEnergyConsumed += (float) (duration / 60 * 1.2);
                         }
+                        // 计算总费用
                         totalCost = (float) (totalEnergyConsumed * 5.0);
-//                        log.info("room:{} totalEnergyConsumed:{} totalCost:{}", roomId, totalEnergyConsumed, totalCost);
                     }
+
+                    // 更新房间的能源消耗和累计费用
                     room.setEnergyConsumed(totalEnergyConsumed);
                     room.setCostAccumulated(totalCost);
-                    roomService.updateRoom(room);
+                    roomService.updateRoom(room); // 保存更新
                 }
                 else {
                     roomService.setRoomCost(roomId, LocalDateTime.now());
@@ -206,6 +210,7 @@ public class ScheduleTask {
             });
         }
     }
+
 
 
     /**

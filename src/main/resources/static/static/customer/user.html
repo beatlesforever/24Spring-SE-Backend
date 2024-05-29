@@ -204,7 +204,7 @@
     }
 
     function fetchRoomInfo(roomId, token) {
-        fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+        fetch(`/api/rooms/${roomId}`, {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -288,7 +288,7 @@
             return;
         }
 
-        const url = `http://localhost:8080/api/unit/requests?targetTemperature=${targetTemperature}&fanSpeed=${fanSpeed}`;
+        const url = `/api/unit/requests?targetTemperature=${targetTemperature}&fanSpeed=${fanSpeed}`;
 
         fetch(url, {
             method: 'POST',
@@ -337,7 +337,7 @@
         const roomId = localStorage.getItem('roomId');
         const token = localStorage.getItem('token');
 
-        const url = `http://localhost:8080/api/users/login`;
+        const url = `/api/users/login`;
         const requestBody = {
             username: username,
             password: password,
@@ -381,7 +381,7 @@
     }
 
     function powerToggleOn(roomId, token, authToken) {
-        const url = `http://localhost:8080/api/unit/${roomId}/authen`;
+        const url = `/api/unit/${roomId}/authen`;
 
         const requestBody = {
             username: localStorage.getItem('username'),
@@ -414,7 +414,7 @@
     }
 
     function powerToggleOff(roomId, token) {
-        const url = `http://localhost:8080/api/rooms/${roomId}/stop`;
+        const url = `/api/rooms/${roomId}/stop`;
 
         fetch(url, {
             method: 'POST',

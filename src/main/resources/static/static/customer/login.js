@@ -10,7 +10,7 @@ document.getElementById("customerLoginForm").addEventListener("submit", function
         roomId: room
     };
 
-    fetch('http://localhost:8080/api/users/login', {
+    fetch('/api/users/login', {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'

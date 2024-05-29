@@ -10,7 +10,7 @@ document.getElementById("registerForm").addEventListener("submit", function(even
         roomId: roomId
     };
 
-    fetch('http://localhost:8080/api/users/register', {
+    fetch('/api/users/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -33,7 +33,7 @@ document.getElementById("registerForm").addEventListener("submit", function(even
 });
 
 document.getElementById("checkRoomsButton").addEventListener("click", function() {
-    fetch('http://localhost:8080/api/rooms/available')
+    fetch('/api/rooms/available')
         .then(response => response.json())
         .then(responseData => {
             const data = responseData.data;
