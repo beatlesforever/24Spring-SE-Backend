@@ -61,31 +61,27 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     }
 
 
+    /**
+     * 初始化季节和温度。
+     * 此方法根据当前月份和时间，设置当前季节和相应的起始温度。
+     * 月份在4月至9月之间被认为是夏季，其它时间被认为是冬季。
+     * 不接受参数，也不返回任何值。
+     */
     private void initializeSeasonAndTemperature() {
+        // 获取当前月份值
         int month = LocalDate.now().getMonthValue();
-        LocalTime now = LocalTime.now();
-        int hour = now.getHour();
 
-        if (month >= 4 && month <= 9) { // 夏季月份4月到9月
+        if (month >= 4 && month <= 9) { // 判断当前月份是否在夏季范围内
             isSummerSeason = true;
-            // 判断当前时间是否在白天
-            if (hour >= 6 && hour < 18) {
-                currentTemperature = 25.0f; // 夏季白天起始温度
-            } else {
-                currentTemperature = 40.0f; // 夏季夜晚起始温度
-            }
-        } else { // 冬季月份10月到3月
+            currentTemperature = 25.0f; // 设置夏季起始温度
+        } else { // 默认为冬季
             isSummerSeason = false;
-            // 判断当前时间是否在白天
-            if (hour >= 6 && hour < 18) {
-                currentTemperature = -5.0f; // 冬季白天起始温度
-            } else {
-                currentTemperature = 10.0f; // 冬季夜晚起始温度
-            }
+            currentTemperature = 15.0f; // 冬季起始温度
         }
+        // 将当前温度设置为环境温度
         EnvironmentConstant.environmentTemperature = currentTemperature;
-
     }
+
 
     /**
      * 重置所有房间到默认状态
@@ -139,7 +135,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
     @Scheduled(cron = "0 0 0 1 10 ?") // 10月1日凌晨0点开始冬季
     public void startWinterSeason() {
         isSummerSeason = false;
-        currentTemperature = -5.0f; // 设置冬季起始温度
+        currentTemperature = 15.0f; // 设置冬季起始温度
         // 同步更新全局环境温度常量
         EnvironmentConstant.environmentTemperature = currentTemperature;
     }
@@ -149,27 +145,17 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
      * 该方法每20s执行一次，根据当前季节和时间调整环境温度，并保存新的温度值。
      * 夏季温度会在白天上升，夜间下降，冬季则相反。
      * 并且温度值会受到限制，保持在合理的范围内。
-     *
      * 本方法不接受参数，也不返回任何值。
      * 利用定时任务框架（如Quartz或Spring的@Scheduled注解）每分钟调用以更新温度。
      */
     @Scheduled(fixedRate = 20000) // 每20秒执行一次
     public void updateEnvironmentTemperature() {
-        LocalTime now = LocalTime.now(); // 获取当前时间
-        int hour = now.getHour(); // 获取当前小时数
         float temperatureChange = 0.1f; // 每20秒温度变化量
 
-        // 根据当前季节调整温度，增加或减少温度，并限制在合理范围内
         if (isSummerSeason) {
-            // 夏季温度调整逻辑
-            currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
-            // 限制夏季温度范围
-            currentTemperature = Math.min(Math.max(currentTemperature, 25.0f), 40.0f);
+            currentTemperature = Math.min(currentTemperature + temperatureChange, 50.0f); // 夏季温度上升，限制最高温度
         } else {
-            // 冬季温度调整逻辑
-            currentTemperature += (hour >= 6 && hour < 18) ? temperatureChange : -temperatureChange;
-            // 限制冬季温度范围
-            currentTemperature = Math.min(Math.max(currentTemperature, -5.0f), 10.0f);
+            currentTemperature = Math.max(currentTemperature - temperatureChange, -10.0f); // 冬季温度下降，限制最低温度
         }
 
         // 更新全局环境温度变量
@@ -178,9 +164,6 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         // 创建新的环境温度记录
         EnvironmentTemperature environmentTemperature = new EnvironmentTemperature();
         environmentTemperature.setTemperature(currentTemperature);
-
-        // 保存或更新环境温度记录到数据库
-        // environmentTemperatureService.save(environmentTemperature);
 
         // 更新所有房间的当前温度
         roomService.updateRoomTemperatures(currentTemperature);

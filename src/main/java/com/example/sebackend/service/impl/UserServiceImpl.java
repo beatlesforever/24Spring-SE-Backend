@@ -63,7 +63,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public User login(String username, String password) {
         // 通过用户名查询用户
         User user = findByUsername(username);
-        System.out.println("当前用户: " + user);
 
         // 验证密码是否匹配
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
