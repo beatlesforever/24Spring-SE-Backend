@@ -118,31 +118,34 @@ public class ScheduleTask {
                     //根据空调的制冷或制热模式,高速变化0.9,中速变化0.6,低速变化0.3,
                     //10s变化一次温度
                     //设置从控机的温度变化
+                    Float currentTemperature = room.getCurrentTemperature();
                     if (Objects.equals(room.getMode(), "cooling")) {
                         if (Objects.equals(room.getFanSpeed(), "high")) {
-                            room.setCurrentTemperature(Math.max(room.getCurrentTemperature() - 0.15f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.max(currentTemperature - 0.15f, room.getTargetTemperature()));
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            room.setCurrentTemperature(Math.max(room.getCurrentTemperature() - 0.1f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.max(currentTemperature - 0.1f, room.getTargetTemperature()));
                         } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                            room.setCurrentTemperature(Math.max(room.getCurrentTemperature() - 0.05f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.max(currentTemperature - 0.05f, room.getTargetTemperature()));
                         }
                     } else if (Objects.equals(room.getMode(), "heating")) {
                         if (Objects.equals(room.getFanSpeed(), "high")) {
-                            room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.15f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.min(currentTemperature + 0.15f, room.getTargetTemperature()));
                         } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.1f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.min(currentTemperature + 0.1f, room.getTargetTemperature()));
                         } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                            room.setCurrentTemperature(Math.min(room.getCurrentTemperature() + 0.05f, room.getTargetTemperature()));
+                            room.setCurrentTemperature(Math.min(currentTemperature + 0.05f, room.getTargetTemperature()));
                         }
                     }
                     controlLogService.setLatestLogDuration(roomId);
+//                    System.out.printf("房间%d当前温度为%.2f当前持续时间%d\n", roomId, currentTemperature, controlLogService.getLatestLog(roomId).getDuration());
 
                     //判断当前温度和目标温度相同,将房间空调设置成standby模式;
-                    if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) <=0) {
+                    if (Math.abs(room.getTargetTemperature() - currentTemperature) <=0) {
                         room.setStatus("standby");
                         //设置controlLog结束
                         LocalDateTime endTime = LocalDateTime.now();
-                        controlLogService.setLatestLog(roomId, endTime, true, room.getCurrentTemperature());
+                        controlLogService.setLatestLog(roomId, endTime, true, currentTemperature);
+//                        System.out.printf("房间%d当前温度为%.2f当前持续时间%d\n", roomId, currentTemperature, controlLogService.getLatestLog(roomId).getDuration());
                         //更新房间的累计费用
                         endTime= LocalDateTime.now();
                         roomService.setRoomCost(roomId, endTime);
