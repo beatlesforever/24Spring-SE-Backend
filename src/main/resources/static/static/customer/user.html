@@ -168,6 +168,7 @@
             temperatureInput.value = roomInfo.targetTemperature;
             document.getElementById('targetTemperatureDisplay').innerText = roomInfo.targetTemperature;
         }
+        document.getElementById('fanSpeedSelect').value = "中";
 
         const fanSpeedSelect = document.getElementById('fanSpeedSelect');
         fanSpeedSelect.addEventListener('change', function() {
@@ -253,8 +254,6 @@
         `;
         document.getElementById('energyConsumed').innerText = roomData.energyConsumed;
         document.getElementById('costAccumulated').innerText = roomData.costAccumulated;
-
-        document.getElementById('fanSpeedSelect').value = fanSpeedMap[roomData.fanSpeed];
 
         const powerSwitch = document.getElementById('powerSwitch');
         powerSwitch.checked = roomData.status !== 'off';
