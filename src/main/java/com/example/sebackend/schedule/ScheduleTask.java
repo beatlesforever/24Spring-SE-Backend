@@ -102,7 +102,7 @@ public class ScheduleTask {
      * @Scheduled(fixedRate = 1000, initialDelay = 1000) 注解表示方法会周期性执行，每隔1000毫秒执行一次，初始延迟也为1000毫秒。
      */
     @Async
-    @Scheduled(fixedRate = 1000, initialDelay = 1000)
+    @Scheduled(fixedRate = 10000, initialDelay = 1000)
     public void adjustRoomTemperature() {
         // 获取所有房间信息
         List<Room> rooms = roomService.list();
@@ -123,13 +123,7 @@ public class ScheduleTask {
                         roomMap.put(roomId, room);
                     }
                 }
-                // 房间状态为"on"且服务状态为"serving"时，会执行温度调整操作（代码被省略）
-                // 其他情况下，更新房间的能耗和费用信息
-                if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
-                    // extracted(room, roomId); // 此处为温度调整逻辑的占位符
-                } else {
-                    roomService.setRoomCost(roomId, LocalDateTime.now());
-                }
+                roomService.setRoomCost(roomId, LocalDateTime.now());
             });
         }
     }
@@ -205,7 +199,7 @@ public class ScheduleTask {
      *
      * @Scheduled 注解指定了任务的执行周期为2000毫秒。
      */
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 10000)
     public void checkSchedulerQueue() {
         CentralUnit centralUnit = centralUnitService.getById(1);
         if (centralUnit.getStatus().equals("on") || centralUnit.getStatus().equals("standby")) {
