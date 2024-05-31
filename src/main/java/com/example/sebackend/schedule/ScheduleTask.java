@@ -213,10 +213,13 @@ public class ScheduleTask {
             // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
             int threadsToStart = Math.min(roomMap.size(), MAX_THREADS);
             System.out.println("本次需要处理的房间数 " + threadsToStart);
+
+            List<Integer> roomsToBeUpdated = new ArrayList<>();
+
+
             // 启动线程池中的线程以处理队列中的请求
             for (int i = 0; i < threadsToStart; i++) {
                 Room room = roomService.current_userRoom(); // 获取请求用户的房间
-                AtomicInteger roomId = new AtomicInteger();
                 // 如果找到房间，则处理该房间的请求
                 if (room != null) {
                     centralUnit.setStatus("on");
@@ -227,21 +230,30 @@ public class ScheduleTask {
                     roomService.updateRoom(room);
                     // 创建新的记录控制日志
                     controlLogService.addControlLog(room);
-                    roomId.set(room.getRoomId());
                     //处理房间的温度变化
-                    log.info("房间{}处理前的温度为{}\n", roomId.get(), room.getCurrentTemperature());
-                    extracted(room, roomId.get());
-                    log.info("房间{}处理后的温度为{}\n", roomId.get(), room.getCurrentTemperature());
-                    processingRooms.remove(room.getRoomId());
-
-                    //达到目标温度从队列中移除
-                    if (checkRoomTemperature(room)){
-                        roomMap.remove(room.getRoomId());
-                    }else{
-                        roomMap.put(room.getRoomId(),roomService.getById(room.getRoomId()));
-                    }
+                    log.info("房间{}处理前的温度为{}\n", room.getRoomId(), room.getCurrentTemperature());
+                    extracted(room, room.getRoomId());
+                    log.info("房间{}处理后的温度为{}\n", room.getRoomId(), room.getCurrentTemperature());
+                    // 添加到更新队列
+                    roomsToBeUpdated.add(room.getRoomId());
+                    // 标记房间正在被处理
+                    processingRooms.put(room.getRoomId(), true);
                 }
             }
+
+            // 检查房间是否达到目标温度，并更新或移除
+            for (Integer roomId : roomsToBeUpdated) {
+                Room updatedRoom = roomService.getById(roomId);
+                if (checkRoomTemperature(updatedRoom)) {
+                    roomMap.remove(roomId);
+                } else {
+                    roomMap.put(roomId, updatedRoom);
+                }
+            }
+
+            // 清除所有处理标记
+            processingRooms.clear();
+
             if (threadsToStart == 0) {
                 // 只有所有房间不处于serving状态时，才设置空调为standby状态
                 if (allRoomsNotServing()) {
