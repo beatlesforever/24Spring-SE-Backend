@@ -123,9 +123,7 @@ public class ScheduleTask {
                         roomMap.put(roomId, room);
                     }
                 }
-                if(!Objects.equals(room.getStatus(), "on") || !Objects.equals(room.getServiceStatus(), "serving")) {
-                    roomService.setRoomCost(roomId, LocalDateTime.now());
-                }
+                roomService.setRoomCost(roomId, LocalDateTime.now());
             });
         }
     }
