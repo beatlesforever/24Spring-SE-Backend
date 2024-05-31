@@ -1,6 +1,5 @@
 package com.example.sebackend.schedule;
 
-import com.example.sebackend.context.BaseContext;
 import com.example.sebackend.context.FrequencyConstant;
 import com.example.sebackend.entity.*;
 import com.example.sebackend.service.*;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -97,7 +94,7 @@ public class ScheduleTask {
     //从控机机工作状态下,房间的温度变化调整
     //10s检测房间温度,把请求放到调度队列中,10s处理一次房间的温度,60s计算一次房间能耗和费用
     @Async
-    @Scheduled(fixedRate = 10000, initialDelay = 1000)
+    @Scheduled(fixedRate = 1000, initialDelay = 1000)
     public void adjustRoomTemperature() {
         List<Room> rooms = roomService.list();
         for (Room room : rooms) {
@@ -115,73 +112,77 @@ public class ScheduleTask {
                     }
                 }
                 if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
-                    //根据空调的制冷或制热模式,高速变化0.9,中速变化0.6,低速变化0.3,
-                    //10s变化一次温度
-                    //设置从控机的温度变化
-                    Float currentTemperature = room.getCurrentTemperature();
-                    if (Objects.equals(room.getMode(), "cooling")) {
-                        if (Objects.equals(room.getFanSpeed(), "high")) {
-                            room.setCurrentTemperature(Math.max(currentTemperature - 0.15f, room.getTargetTemperature()));
-                        } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            room.setCurrentTemperature(Math.max(currentTemperature - 0.1f, room.getTargetTemperature()));
-                        } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                            room.setCurrentTemperature(Math.max(currentTemperature - 0.05f, room.getTargetTemperature()));
-                        }
-                    } else if (Objects.equals(room.getMode(), "heating")) {
-                        if (Objects.equals(room.getFanSpeed(), "high")) {
-                            room.setCurrentTemperature(Math.min(currentTemperature + 0.15f, room.getTargetTemperature()));
-                        } else if (Objects.equals(room.getFanSpeed(), "medium")) {
-                            room.setCurrentTemperature(Math.min(currentTemperature + 0.1f, room.getTargetTemperature()));
-                        } else if (Objects.equals(room.getFanSpeed(), "low")) {
-                            room.setCurrentTemperature(Math.min(currentTemperature + 0.05f, room.getTargetTemperature()));
-                        }
-                    }
-                    //更新服务时间
-                    controlLogService.setLatestLogDuration(roomId);
-                    //更新房间费用
-                    LocalDateTime startTime = LocalDateTime.of(1999, 1, 1, 0, 0, 0); // 设置查询的起始时间
-                    LocalDateTime queryTime = LocalDateTime.now(); // 获取当前时间作为查询的结束时间
 
-                    // 查询该房间在指定时间范围内的已完成的温控请求
-                    List<ControlLog> controlLogs = controlLogService.getFinishedLogs(roomId, startTime, queryTime);
-                    // 计算这些温控请求的总能量消耗和总费用
-                    float totalEnergyConsumed = 0.0f;
-                    float totalCost = 0.0f;
-                    for (ControlLog controlLog : controlLogs) {
-                        totalEnergyConsumed += controlLog.getEnergyConsumed();
-                        totalCost += controlLog.getCost();
-                    }
-                    // 根据当前房间的风速，计算持续时间内的额外能源消耗
-                    ControlLog latestLog = controlLogService.getLatestLog(roomId);
-                    if (latestLog != null) {
-                        latestLog.getEnergyConsumed();
-                        totalEnergyConsumed += latestLog.getEnergyConsumed();
-                        // 计算总费用
-                        totalCost += latestLog.getCost();
-                    }
-                    // 更新房间的能源消耗和累计费用
-                    room.setEnergyConsumed(totalEnergyConsumed);
-                    room.setCostAccumulated(totalCost);
-                    //判断当前温度和目标温度相同,将房间空调设置成standby模式;
-                    if (Math.abs(room.getTargetTemperature() - currentTemperature) <=0) {
-                        room.setStatus("standby");
-                        //设置controlLog结束
-                        LocalDateTime endTime = LocalDateTime.now();
-                        controlLogService.setLatestLog(roomId, endTime, true, currentTemperature);
-//                        System.out.printf("房间%d当前温度为%.2f当前持续时间%d\n", roomId, currentTemperature, controlLogService.getLatestLog(roomId).getDuration());
-                        //更新房间的累计费用
-                        endTime= LocalDateTime.now();
-                        roomService.setRoomCost(roomId, endTime);
-                    }
-                    roomService.updateRoom(room);
-                }
-                else {
+//                    extracted(room, roomId);
+                } else {
                     roomService.setRoomCost(roomId, LocalDateTime.now());
                 }
 
 
             });
         }
+    }
+
+    //根据空调的制冷或制热模式,高速变化0.9,中速变化0.6,低速变化0.3,
+    //10s变化一次温度
+    //设置从控机的温度变化
+    private void extracted(Room room, int roomId) {
+        Float currentTemperature = room.getCurrentTemperature();
+        if (Objects.equals(room.getMode(), "cooling")) {
+            if (Objects.equals(room.getFanSpeed(), "high")) {
+                room.setCurrentTemperature(Math.max(currentTemperature - 0.15f, room.getTargetTemperature()));
+            } else if (Objects.equals(room.getFanSpeed(), "medium")) {
+                room.setCurrentTemperature(Math.max(currentTemperature - 0.1f, room.getTargetTemperature()));
+            } else if (Objects.equals(room.getFanSpeed(), "low")) {
+                room.setCurrentTemperature(Math.max(currentTemperature - 0.05f, room.getTargetTemperature()));
+            }
+        } else if (Objects.equals(room.getMode(), "heating")) {
+            if (Objects.equals(room.getFanSpeed(), "high")) {
+                room.setCurrentTemperature(Math.min(currentTemperature + 0.15f, room.getTargetTemperature()));
+            } else if (Objects.equals(room.getFanSpeed(), "medium")) {
+                room.setCurrentTemperature(Math.min(currentTemperature + 0.1f, room.getTargetTemperature()));
+            } else if (Objects.equals(room.getFanSpeed(), "low")) {
+                room.setCurrentTemperature(Math.min(currentTemperature + 0.05f, room.getTargetTemperature()));
+            }
+        }
+        //更新服务时间
+        controlLogService.setLatestLogDuration(roomId);
+        //更新房间费用
+        LocalDateTime startTime = LocalDateTime.of(1999, 1, 1, 0, 0, 0); // 设置查询的起始时间
+        LocalDateTime queryTime = LocalDateTime.now(); // 获取当前时间作为查询的结束时间
+
+        // 查询该房间在指定时间范围内的已完成的温控请求
+        List<ControlLog> controlLogs = controlLogService.getFinishedLogs(roomId, startTime, queryTime);
+        // 计算这些温控请求的总能量消耗和总费用
+        float totalEnergyConsumed = 0.0f;
+        float totalCost = 0.0f;
+        for (ControlLog controlLog : controlLogs) {
+            totalEnergyConsumed += controlLog.getEnergyConsumed();
+            totalCost += controlLog.getCost();
+        }
+        // 根据当前房间的风速，计算持续时间内的额外能源消耗
+        ControlLog latestLog = controlLogService.getLatestLog(roomId);
+        if (latestLog != null) {
+            latestLog.getEnergyConsumed();
+            totalEnergyConsumed += latestLog.getEnergyConsumed();
+            // 计算总费用
+            totalCost += latestLog.getCost();
+        }
+        // 更新房间的能源消耗和累计费用
+        room.setEnergyConsumed(totalEnergyConsumed);
+        room.setCostAccumulated(totalCost);
+        //判断当前温度和目标温度相同,将房间空调设置成standby模式;
+        if (Math.abs(room.getTargetTemperature() - currentTemperature) <= 0) {
+            room.setStatus("standby");
+            //设置controlLog结束
+            LocalDateTime endTime = LocalDateTime.now();
+            controlLogService.setLatestLog(roomId, endTime, true, currentTemperature);
+//                        System.out.printf("房间%d当前温度为%.2f当前持续时间%d\n", roomId, currentTemperature, controlLogService.getLatestLog(roomId).getDuration());
+            //更新房间的累计费用
+            endTime = LocalDateTime.now();
+            roomService.setRoomCost(roomId, endTime);
+        }
+        roomService.updateRoom(room);
     }
 
 
@@ -194,60 +195,51 @@ public class ScheduleTask {
      *
      * @Scheduled 注解指定了任务的执行周期为2000毫秒。
      */
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRate = 1000)
     public void checkSchedulerQueue() {
         CentralUnit centralUnit = centralUnitService.getById(1);
-        if(centralUnit.getStatus().equals("on") || centralUnit.getStatus().equals("standby")){
+        if (centralUnit.getStatus().equals("on") || centralUnit.getStatus().equals("standby")) {
             // 计算当前队列中的房间数量
             AtomicInteger queueLength = new AtomicInteger(roomMap.size());
 
             // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
             int threadsToStart = Math.min(queueLength.get(), MAX_THREADS);
-
             // 启动线程池中的线程以处理队列中的请求
             for (int i = 0; i < threadsToStart; i++) {
                 AIR_CONDITIONER_EXECUTOR.execute(() -> {
                     Room room = roomService.current_userRoom(); // 获取请求用户的房间
-
+                    AtomicInteger roomId = new AtomicInteger();
                     // 如果找到房间，则处理该房间的请求
                     if (room != null) {
                         centralUnit.setStatus("on");
                         centralUnitService.updateById(centralUnit);
                         roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
-                            log.info("{} :正在处理 {} 房间的请求",LocalDateTime.now(),room.getRoomId());
+                            log.info("{} :正在处理 {} 房间的请求", LocalDateTime.now(), room.getRoomId());
                             room.setStatus("on");
                             room.setServiceStatus("serving");
                             roomService.updateRoom(room);
                             // 创建新的记录控制日志
                             controlLogService.addControlLog(room);
-                            // 在处理完成后，清除该房间的处理标记
-                            processingRooms.remove(id);
-                            // 通过WebSocket通知前端请求已完成
-//                        log.info("username:{}",BaseContext.getCurrentUser());
-//                        log.info("room:{}",room.getRoomId());
-                            User user = userService.getUserByRoomId(room.getRoomId());
-                            if (user != null) {
-                                username = user.getUsername();
-                                try {
-                                    RoomVO roomVO = new RoomVO();
-                                    //使用复制属性的方式，将room的属性复制到roomVO中
-                                    BeanUtils.copyProperties(room, roomVO);
-                                    webSocketRequest.sendMessage(username, new Response(200, "请求已完成", roomVO));
-                                } catch (JsonProcessingException e) {
-                                    throw new RuntimeException(e);
-                                }
+                            roomId.set(room.getRoomId());
+                            //处理房间的温度变化
+                            System.out.printf("房间%d当前温度为%.2f\n", roomId.get(), room.getCurrentTemperature());
+                            extracted(room, roomId.get());
+                            System.out.printf("房间%d当前温度为%.2f\n", roomId.get(), room.getCurrentTemperature());
+                            //达到目标温度从队列中移除
+                            if (checkRoomTemperature(room)){
+                                processingRooms.remove(id);
                             }
                             return null; // 从房间映射中移除已处理的房间
                         });
                     }
                 });
             }
-            if(threadsToStart == 0) {
+            if (threadsToStart == 0) {
                 // 只有所有房间不处于serving状态时，才设置空调为standby状态
                 if (allRoomsNotServing()) {
                     centralUnit.setStatus("standby");
                     centralUnitService.updateById(centralUnit);
-                }else{
+                } else {
                     centralUnit.setStatus("on");
                     centralUnitService.updateById(centralUnit);
                 }
@@ -256,9 +248,15 @@ public class ScheduleTask {
 
     }
 
+    //检查房间的目标温度和当前温度是否相同,相同返回ture,表示踢出队列
+    private boolean checkRoomTemperature(Room room) {
+        return Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) <= 0;
+    }
+
+
     /**
      * 检查所有房间是否都不在服务状态。
-     *
+     * <p>
      * 该方法通过调用roomService.list()获取房间列表，并遍历每个房间，检查其服务状态和服务状态是否为"on"。
      * 如果发现任何房间的服务状态为"serving"且状态为"on"，则认为至少有一个房间在服务状态，返回false。
      * 如果所有房间都不在服务状态，则返回true。
@@ -277,8 +275,6 @@ public class ScheduleTask {
         // 所有房间都不在服务状态，返回true
         return true;
     }
-
-
 
 
     /**
@@ -320,7 +316,6 @@ public class ScheduleTask {
 
 
     }
-
 
 
 }
