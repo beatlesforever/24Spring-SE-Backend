@@ -22,4 +22,5 @@ public interface IRoomService extends IService<Room> {
     //设置房间的累计费用
     void setRoomCost(int roomId, LocalDateTime endTime);
 
+    void removeMap(int roomId);
 }

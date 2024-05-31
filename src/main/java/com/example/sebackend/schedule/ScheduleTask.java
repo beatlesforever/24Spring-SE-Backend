@@ -65,6 +65,9 @@ public class ScheduleTask {
     private static final int MAX_THREADS = 3;
     private static final ExecutorService AIR_CONDITIONER_EXECUTOR = Executors.newFixedThreadPool(MAX_THREADS);
 
+    public void removeRoom(Integer roomId){
+        roomMap.remove(roomId);
+    }
 
     /**
      * 定时任务，用于每月第一天凌晨1点修改中央空调的设置。
@@ -185,7 +188,9 @@ public class ScheduleTask {
             //更新房间的累计费用
             endTime = LocalDateTime.now();
             roomService.setRoomCost(roomId, endTime);
+            roomService.removeMap(roomId);
         }
+
         roomService.updateRoom(room);
     }
 
@@ -213,7 +218,6 @@ public class ScheduleTask {
             System.out.println("本次需要处理的房间数 " + threadsToStart);
 
             List<Integer> roomsToBeUpdated = new ArrayList<>();
-
 
             // 启动线程池中的线程以处理队列中的请求
             for (int i = 0; i < threadsToStart; i++) {

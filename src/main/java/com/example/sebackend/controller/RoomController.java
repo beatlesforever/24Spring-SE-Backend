@@ -164,6 +164,8 @@ public class RoomController {
         controlLogService.setLatestLog(roomId, endTime, true, room.getCurrentTemperature());
         //更新房间的累计费用
         roomService.setRoomCost(roomId, endTime);
+
+        roomService.removeMap(roomId);
         return createResponse(HttpStatus.OK, "从控机关闭成功", room);
     }
 

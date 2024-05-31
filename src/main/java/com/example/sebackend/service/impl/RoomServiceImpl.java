@@ -110,6 +110,11 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         updateRoom(room);
     }
 
+    @Override
+    public void removeMap(int roomId) {
+        roomMap.remove(roomId);
+    }
+
 
     /**
      * 更新房间信息。
