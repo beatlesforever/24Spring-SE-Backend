@@ -157,6 +157,8 @@ public class RoomController {
         room.setStatus("off");
         room.setLastUpdate(LocalDateTime.now());
         roomService.updateById(room);
+        //调度队列中移除房间
+        roomService.removeFromSchedulingQueue(roomId);
         //写入关机记录
         usageRecordService.saveEndRecord(roomId, LocalDateTime.now());
         //设置controlLog结束

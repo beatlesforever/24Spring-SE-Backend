@@ -37,48 +37,17 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     RoomMapper roomMapper;
     @Autowired
     UserMapper userMapper;
-    //    @Autowired
-//    private SimpMessagingTemplate template;
+
     @Autowired
     IControlLogService controlLogService;
     @Autowired
     private IUsageRecordService usageRecordService;
     @Autowired
     private RoomServiceImpl roomService;
-    private final ConcurrentHashMap<Integer, Room> roomMap;
-
     @Autowired
-    public CentralUnitServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomMap) {
-        this.roomMap = roomMap;
-    }
+    private SchedulingQueueService schedulingQueueService;
 
 
-    //状态为0设置成失败,状态为1设置成成功
-    @Override
-    public int fulfill(float targetTemperature, String targetSpeed) {
-        //从调用队列中获取到room请求,并进行处理
-        if (current_userRoom() != null) {
-            Room room = current_userRoom();
-            Float currentTemperature = room.getCurrentTemperature();
-            if (currentTemperature > targetTemperature && targetSpeed.equals("high")) {
-                //不处理
-                return 0;
-            }
-            if (currentTemperature < targetTemperature && targetSpeed.equals("low")) {
-                //不处理
-                return 0;
-            }
-            roomMapper.update(room);
-            return 1;
-        }
-        return 404;//无房间号
-    }
-
-    //获取到请求,将请求信息添加到等待队列中,返回处理的请求
-    public Room schedule() {
-
-        return null;
-    }
 
     /**
      * 获取当前用户的房间信息。
@@ -87,8 +56,6 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
      * @return Room 返回当前用户的房间对象。
      */
     private Room current_userRoom() {
-        // 记录当前用户的日志信息
-//        log.info("User:{}", BaseContext.getCurrentUser());
         // 根据用户名获取用户ID
         int roomId = userMapper.getByUsername(BaseContext.getCurrentUser());
         // 根据房间ID获取房间对象
@@ -176,7 +143,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
     @Override
     public CentralUnit authen(int roomId) {
         // 查找当前用户所在的房间
-        Room room = current_userRoom();
+        Room room ;
         room = roomMapper.getId(roomId);
 
 //        log.info("room");
@@ -194,7 +161,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
             room.setServiceStatus("waiting");
             roomMapper.update(room);
             // 将房间请求加入到请求队列中
-            roomMap.put(room.getRoomId(), room);
+            schedulingQueueService.addRoomToQueue(room.getRoomId());
             //添加到记录中
             //当前时间
 //            LocalDateTime now = LocalDateTime.now();
@@ -221,7 +188,6 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
 
         // 将房间状态封装成响应对象，发送到指定主题
         Response response = new Response(200, "从控机状态已更新", rooms);
-//        template.convertAndSend("/air/RoomStatus", response);
 
         // 返回最新的房间状态列表
         return roomMapper.list();
@@ -295,13 +261,10 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
         CentralUnit centralUnit = centralUnitMapper.getCentral();
         if (centralUnit.getStatus().equals("off")) {
             //通知前端,中央空调已关机
-            Response response = new Response(403, "中央空调已关机", room);
-//            template.convertAndSend("/air/requestServing", response);
-            return response;
+            return new Response(403, "中央空调已关机", room);
         } else if (room.getStatus().equals(("off"))) {
             //通知前端,房间已关机
-            Response response = new Response(403, "从控机未认证开机", room);
-            return response;
+            return new Response(403, "从控机未认证开机", room);
         } else {
             //判断合理性
             if (room.getMode().equals("cooling")) {
@@ -312,6 +275,8 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     room.setStatus("on");
                     room.setServiceStatus("waiting");
                     roomMapper.update(room);
+                    //加入调度队列
+                    schedulingQueueService.addRoomToQueue(room.getRoomId());
                     //设置controlLog结束
                     LocalDateTime endTime = LocalDateTime.now();
                     controlLogService.setLatestLog(room.getRoomId(), endTime, true, room.getCurrentTemperature());
@@ -319,9 +284,7 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     roomService.setRoomCost(room.getRoomId(), endTime);
                 } else {
                     //返回目标温度设置不合理
-                    Response response = new Response(404, "目标温度设置不合理", room);
-//                    template.convertAndSend("/air/requestServing", response);
-                    return response;
+                    return new Response(404, "目标温度设置不合理", room);
                 }
             } else if (room.getMode().equals("heating")) {
                 if (targetTemperature > room.getCurrentTemperature() && targetTemperature <= 30 && targetTemperature >= 25) {
@@ -331,6 +294,8 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     room.setServiceStatus("waiting");
                     room.setStatus("on");
                     roomMapper.update(room);
+                    //加入调度队列
+                    schedulingQueueService.addRoomToQueue(room.getRoomId());
                     //设置controlLog结束
                     LocalDateTime endTime = LocalDateTime.now();
                     controlLogService.setLatestLog(room.getRoomId(), endTime, true, room.getCurrentTemperature());
@@ -338,18 +303,13 @@ public class CentralUnitServiceImpl extends ServiceImpl<CentralUnitMapper, Centr
                     roomService.setRoomCost(room.getRoomId(), endTime);
                 } else {
                     //返回目标温度设置不合理
-                    Response response = new Response(404, "目标温度设置不合理", room);
-//                    template.convertAndSend("/air/requestServing", response);
-                    return response;
+                    return new Response(404, "目标温度设置不合理", room);
                 }
             }
-            //将请求加入到请求队列中
-            //删除之前的同一房间的等待中的请求,使用Map存储
-            roomMap.put(room.getRoomId(), room);
+            //将请求加入到请求队列中,并删除之前的同一房间的等待中的请求
+            schedulingQueueService.addRoomToQueue(room.getRoomId());
             //通知前端,请求已加入等待队列
-            Response response = new Response(200, "请求已加入等待队列", room);
-//            template.convertAndSend("/air/requestServing", response);
-            return response;
+            return new Response(200, "请求已加入等待队列", room);
         }
     }
 

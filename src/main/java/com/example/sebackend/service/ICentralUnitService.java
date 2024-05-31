@@ -13,7 +13,6 @@ import java.util.List;
  * @project SE-backend
  */
 public interface ICentralUnitService extends IService<CentralUnit> {
-     int fulfill(float targetTemperature, String targetSpeed);
 
     CentralUnit turnOn();
 
@@ -33,4 +32,5 @@ public interface ICentralUnitService extends IService<CentralUnit> {
     void segfaultTemperature(float defaultTemperature);
 
     Response requests(float targetTemperature, String fanSpeed);
+
 }

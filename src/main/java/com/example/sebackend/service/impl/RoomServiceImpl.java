@@ -5,15 +5,11 @@ import com.example.sebackend.entity.ControlLog;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.RoomMapper;
 import com.example.sebackend.service.IRoomService;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zhouhaoran
@@ -27,25 +23,15 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
     RoomMapper roomMapper;
     @Autowired
     ControlLogServiceImpl controlLogService;
-    private final ConcurrentHashMap<Integer, Room> roomMap;
-    private final ConcurrentHashMap<Integer, Boolean> processingRooms;
 
     @Autowired
-    public RoomServiceImpl(@Qualifier("roomQueue") ConcurrentHashMap<Integer, Room> roomQueue,
-                           @Qualifier("processingRooms") ConcurrentHashMap<Integer, Boolean> processingRooms) {
-        this.roomMap = roomQueue;
-        this.processingRooms = processingRooms;
+    private SchedulingQueueService schedulingQueueService;
+
+    @Override
+    public void removeFromSchedulingQueue(Integer roomId) {
+        schedulingQueueService.removeRoomFromQueue(roomId);
     }
 
-    /**
-     * 判断房间的请求信息是否存在
-     *
-     * @param key 用于查找房间请求信息的键值
-     * @return boolean 返回true如果房间请求信息存在，否则返回false
-     */
-    public boolean containsRoom(int key) {
-        return roomMap.containsKey(key);
-    }
 
     /**
      * 获取当前用户房间的方法。
@@ -55,37 +41,36 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
      *
      * @return 返回选中的房间，如果没有可用房间则返回null。
      */
-    public Room current_userRoom() {
-        Room room = null;
-        for (Room value : roomMap.values()) {
-            // 检查房间是否已经在处理中
-            if (!processingRooms.containsKey(value.getRoomId())) {
-                switch (value.getFanSpeed()) {
-                    case "high":
-                        room = value;
-                        // 标记此房间正在被处理
-                        break;
-                    case "medium":
-                        // 只有在没有找到高优先级房间的情况下才选择中速风扇的房间
-                        if (room == null || !room.getFanSpeed().equals("high")) {
-                            room = value;
-                        }
-                        break;
-                    case "low":
-                        // 只有在没有找到高或中速风扇的房间的情况下才选择低速风扇的房间
-                        if (room == null || (!room.getFanSpeed().equals("high") && !room.getFanSpeed().equals("medium"))) {
-                            room = value;
-                        }
-                        break;
-                }
-            }
-        }
-        // 如果找到了房间，标记该房间为正在处理中
-        if (room != null) {
-            processingRooms.put(room.getRoomId(), true);
-        }
-        return room;
-    }
+//    public Room current_userRoom() {
+//        Room room = null;
+//        for (Room value : roomMap.values()) {
+//            // 检查房间是否已经在处理中
+//            if (!processingRooms.containsKey(value.getRoomId())) {
+//                switch (value.getFanSpeed()) {
+//                    case "high":
+//                        room = value;
+//                        // 标记此房间正在被处理
+////                        processingRooms.put(value.getRoomId(), true);
+//                        break;
+////                        return room;  // 一旦找到最高优先级的房间就立即退出
+//                    case "medium":
+//                        if (room == null || !room.getFanSpeed().equals("high")) { // 只有在没有找到高优先级房间的情况下才覆盖
+//                            room = value;
+//                        }
+//                        break;
+//                    case "low":
+//                        if (room == null || (!room.getFanSpeed().equals("high") && !room.getFanSpeed().equals("medium"))) { // 只有在没有找到高或中优先级房间的情况下才覆盖
+//                            room = value;
+//                        }
+//                        break;
+//                }
+//            }
+//        }
+//        if (room != null) {
+//            processingRooms.put(room.getRoomId(), true); // 标记选中的房间正在被处理
+//        }
+//        return room;
+//    }
 
     @Override
     public void setRoomCost(int roomId, LocalDateTime endTime) {
@@ -110,11 +95,6 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         updateRoom(room);
     }
 
-    @Override
-    public void removeMap(int roomId) {
-        roomMap.remove(roomId);
-    }
-
 
     /**
      * 更新房间信息。
@@ -124,8 +104,9 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
      *             无返回值，更新操作的结果直接由roomMapper处理。
      */
     @Override
-    public void updateRoom(Room room) {
+    public Room updateRoom(Room room) {
         roomMapper.updateById(room);
+        return roomMapper.getId(room.getRoomId());
     }
 
 

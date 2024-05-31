@@ -46,7 +46,7 @@ public class RunScript implements ApplicationRunner {
             if (!Objects.equals(room.getStatus(), "off")) {
                 //设置最新日志的结束时间
 
-                if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
+                if (Objects.equals(room.getStatus(), "on") ) {
                     //设置controlLog结束
                     LocalDateTime endTime = LocalDateTime.now();
                     controlLogService.setLatestLog(room.getRoomId(), endTime, true, room.getCurrentTemperature());

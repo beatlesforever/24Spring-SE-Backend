@@ -1,6 +1,7 @@
 package com.example.sebackend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.sebackend.context.FrequencyConstant;
 import com.example.sebackend.entity.ControlLog;
 import com.example.sebackend.entity.Room;
 import com.example.sebackend.mapper.ControlLogMapper;
@@ -59,14 +60,14 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
                 log.info("房间{}设置最新日志的结束时间", roomId);
                 // 更新结束时间、完成状态、结束温度和持续时间
                 latestLog.setEndTime(endTime);
-//                latestLog.setCompleted(isCompleted);
-                latestLog.setCompleted(true);
+                latestLog.setCompleted(isCompleted);
                 latestLog.setEndTemp(endTemp);
-                // 计算持续时间（单位：秒）
-//                int duration = (int) (endTime.toEpochSecond(ZoneOffset.UTC) - (latestLog.getRequestTime()).toEpochSecond(ZoneOffset.UTC));
-//                latestLog.setDuration(duration);
                 // 根据ID更新日志记录
                 baseMapper.updateById(latestLog);
+            }
+            if (latestLog.getDuration()==0){
+                //删除
+                baseMapper.deleteById(latestLog.getLogId());
             }
         }
     }
@@ -79,10 +80,10 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
         // 如果最新记录不为空，并且结束时间或结束温度为空，则进行更新
         if (latestLog != null) {
             if (latestLog.getEndTime() == null || latestLog.getEndTemp() == null) {
-                log.info("房间{}设置最新日志的结束时间", roomId);
+                log.info("房间{}服务时长增加{}", roomId,FrequencyConstant.getTime()/1000);
                 // 计算持续时间（单位：秒）
                 Integer duration = latestLog.getDuration();
-                latestLog.setDuration(duration + 10);
+                latestLog.setDuration(duration + FrequencyConstant.getTime()/1000);//一个时间片的持续时间
                 // 根据ID更新日志记录
                 baseMapper.updateById(latestLog);
             }
@@ -98,6 +99,10 @@ public class ControlLogServiceImpl  extends ServiceImpl<ControlLogMapper, Contro
      */
     @Override
     public void addControlLog(Room room) {
+        //当不存在未完成的日志时，添加新的日志
+        if (getUnfinishedLog(room.getRoomId()) != null) {
+            return;
+        }
         // 创建一个新的控制日志实例，填充房间的相关控制信息及当前时间，并设置完成状态为false
         ControlLog controlLog = new ControlLog(room.getRoomId(),
                 room.getTargetTemperature(), room.getCurrentTemperature(),
