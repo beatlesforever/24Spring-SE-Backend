@@ -64,24 +64,25 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
                     case "high":
                         room = value;
                         // 标记此房间正在被处理
-//                        processingRooms.put(value.getRoomId(), true);
                         break;
-//                        return room;  // 一旦找到最高优先级的房间就立即退出
                     case "medium":
-                        if (room == null || !room.getFanSpeed().equals("high")) { // 只有在没有找到高优先级房间的情况下才覆盖
+                        // 只有在没有找到高优先级房间的情况下才选择中速风扇的房间
+                        if (room == null || !room.getFanSpeed().equals("high")) {
                             room = value;
                         }
                         break;
                     case "low":
-                        if (room == null || (!room.getFanSpeed().equals("high") && !room.getFanSpeed().equals("medium"))) { // 只有在没有找到高或中优先级房间的情况下才覆盖
+                        // 只有在没有找到高或中速风扇的房间的情况下才选择低速风扇的房间
+                        if (room == null || (!room.getFanSpeed().equals("high") && !room.getFanSpeed().equals("medium"))) {
                             room = value;
                         }
                         break;
                 }
             }
         }
+        // 如果找到了房间，标记该房间为正在处理中
         if (room != null) {
-            processingRooms.put(room.getRoomId(), true); // 标记选中的房间正在被处理
+            processingRooms.put(room.getRoomId(), true);
         }
         return room;
     }

@@ -123,7 +123,9 @@ public class ScheduleTask {
                         roomMap.put(roomId, room);
                     }
                 }
-                roomService.setRoomCost(roomId, LocalDateTime.now());
+                if(!Objects.equals(room.getStatus(), "on") || !Objects.equals(room.getServiceStatus(), "serving")) {
+                    roomService.setRoomCost(roomId, LocalDateTime.now());
+                }
             });
         }
     }
@@ -204,39 +206,41 @@ public class ScheduleTask {
         CentralUnit centralUnit = centralUnitService.getById(1);
         if (centralUnit.getStatus().equals("on") || centralUnit.getStatus().equals("standby")) {
             // 计算当前队列中的房间数量
-            AtomicInteger queueLength = new AtomicInteger(roomMap.size());
-
+            System.out.println("请求队列的房间号");
+            for (Room value : roomMap.values()) {
+                System.out.println(value.getRoomId());
+            }
             // 确定需要启动的线程数量，限制为队列长度与最大线程数中的较小值
-            int threadsToStart = Math.min(queueLength.get(), MAX_THREADS);
+            int threadsToStart = Math.min(roomMap.size(), MAX_THREADS);
+            System.out.println("本次需要处理的房间数 " + threadsToStart);
             // 启动线程池中的线程以处理队列中的请求
             for (int i = 0; i < threadsToStart; i++) {
-                AIR_CONDITIONER_EXECUTOR.execute(() -> {
-                    Room room = roomService.current_userRoom(); // 获取请求用户的房间
-                    AtomicInteger roomId = new AtomicInteger();
-                    // 如果找到房间，则处理该房间的请求
-                    if (room != null) {
-                        centralUnit.setStatus("on");
-                        centralUnitService.updateById(centralUnit);
-                        roomMap.computeIfPresent(room.getRoomId(), (id, r) -> {
-                            log.info("{} :正在处理 {} 房间的请求", LocalDateTime.now(), room.getRoomId());
-                            room.setStatus("on");
-                            room.setServiceStatus("serving");
-                            roomService.updateRoom(room);
-                            // 创建新的记录控制日志
-                            controlLogService.addControlLog(room);
-                            roomId.set(room.getRoomId());
-                            //处理房间的温度变化
-                            System.out.printf("房间%d当前温度为%.2f\n", roomId.get(), room.getCurrentTemperature());
-                            extracted(room, roomId.get());
-                            System.out.printf("房间%d当前温度为%.2f\n", roomId.get(), room.getCurrentTemperature());
-                            //达到目标温度从队列中移除
-                            if (checkRoomTemperature(room)){
-                                processingRooms.remove(id);
-                            }
-                            return null; // 从房间映射中移除已处理的房间
-                        });
+                Room room = roomService.current_userRoom(); // 获取请求用户的房间
+                AtomicInteger roomId = new AtomicInteger();
+                // 如果找到房间，则处理该房间的请求
+                if (room != null) {
+                    centralUnit.setStatus("on");
+                    centralUnitService.updateById(centralUnit);
+                    log.info("{} :正在处理 {} 房间的请求", LocalDateTime.now(), room.getRoomId());
+                    room.setStatus("on");
+                    room.setServiceStatus("serving");
+                    roomService.updateRoom(room);
+                    // 创建新的记录控制日志
+                    controlLogService.addControlLog(room);
+                    roomId.set(room.getRoomId());
+                    //处理房间的温度变化
+                    log.info("房间{}处理前的温度为{}\n", roomId.get(), room.getCurrentTemperature());
+                    extracted(room, roomId.get());
+                    log.info("房间{}处理后的温度为{}\n", roomId.get(), room.getCurrentTemperature());
+                    processingRooms.remove(room.getRoomId());
+
+                    //达到目标温度从队列中移除
+                    if (checkRoomTemperature(room)){
+                        roomMap.remove(room.getRoomId());
+                    }else{
+                        roomMap.put(room.getRoomId(),roomService.getById(room.getRoomId()));
                     }
-                });
+                }
             }
             if (threadsToStart == 0) {
                 // 只有所有房间不处于serving状态时，才设置空调为standby状态
