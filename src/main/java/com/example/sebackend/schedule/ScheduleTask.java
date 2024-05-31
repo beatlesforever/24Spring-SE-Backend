@@ -91,34 +91,45 @@ public class ScheduleTask {
     }
 
 
-    //从控机机工作状态下,房间的温度变化调整
-    //10s检测房间温度,把请求放到调度队列中,10s处理一次房间的温度,60s计算一次房间能耗和费用
+    /**
+     * 定时调整房间温度的任务。
+     * 此任务周期性地检查所有房间的温度，并根据房间的状态和目标温度进行调整。
+     * 房间状态为"standby"且与目标温度差距大于等于1时，会将房间状态切换为"on"，并设置服务状态为"waiting"。
+     * 对于状态为"on"且服务状态为"serving"的房间，会进行温度调整操作（当前代码段省略）。
+     * 对于其他情况，会更新房间的能耗和费用信息。
+     *
+     * @Async 注解表示此方法将异步执行。
+     * @Scheduled(fixedRate = 1000, initialDelay = 1000) 注解表示方法会周期性执行，每隔1000毫秒执行一次，初始延迟也为1000毫秒。
+     */
     @Async
     @Scheduled(fixedRate = 1000, initialDelay = 1000)
     public void adjustRoomTemperature() {
+        // 获取所有房间信息
         List<Room> rooms = roomService.list();
         for (Room room : rooms) {
             final int roomId = room.getRoomId();
+            // 使用专用线程池执行房间温度调整逻辑
             ROOM_TEMPERATURE_EXECUTOR.execute(() -> {
+                // 设置当前线程名称，便于识别
                 Thread.currentThread().setName("Room-" + roomId);
-                //房间status为off/standby时,向环境温度靠近,将新的值写入数据库,在环境温度的实现类中完成
-                //如果为standby模式,目标温度和当前温度差值为1,设置房间空调waiting,将请求加入到等待队列中
+                // 如果房间状态为"standby"，且与目标温度差距大于等于1，则将房间状态设置为"on"，并设置服务状态为"waiting"
                 if (Objects.equals(room.getStatus(), "standby")) {
                     if (Math.abs(room.getTargetTemperature() - room.getCurrentTemperature()) >= 1) {
                         room.setStatus("on");
                         room.setServiceStatus("waiting");
+                        // 更新房间信息到数据库
                         roomService.updateRoom(room);
+                        // 将更新后的房间信息放入映射中，供其他地方使用
                         roomMap.put(roomId, room);
                     }
                 }
+                // 房间状态为"on"且服务状态为"serving"时，会执行温度调整操作（代码被省略）
+                // 其他情况下，更新房间的能耗和费用信息
                 if (Objects.equals(room.getStatus(), "on") && Objects.equals(room.getServiceStatus(), "serving")) {
-
-//                    extracted(room, roomId);
+                    // extracted(room, roomId); // 此处为温度调整逻辑的占位符
                 } else {
                     roomService.setRoomCost(roomId, LocalDateTime.now());
                 }
-
-
             });
         }
     }
@@ -177,7 +188,6 @@ public class ScheduleTask {
             //设置controlLog结束
             LocalDateTime endTime = LocalDateTime.now();
             controlLogService.setLatestLog(roomId, endTime, true, currentTemperature);
-//                        System.out.printf("房间%d当前温度为%.2f当前持续时间%d\n", roomId, currentTemperature, controlLogService.getLatestLog(roomId).getDuration());
             //更新房间的累计费用
             endTime = LocalDateTime.now();
             roomService.setRoomCost(roomId, endTime);
