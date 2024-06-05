@@ -95,7 +95,6 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
         updateRoom(room);
     }
 
-
     /**
      * 更新房间信息。
      *
