@@ -15,7 +15,7 @@ public interface IRoomService extends IService<Room> {
 
     Room updateRoom(Room room);
 
-    void updateRoomTemperatures(float newTemperature);
+    void updateRoomTemperatures(float newTemperature,float temperatureChange);
 
     //删除当前房间从调度队列
     void removeFromSchedulingQueue(Integer roomId);

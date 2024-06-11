@@ -96,8 +96,8 @@ public class ScheduleTask {
         }
     }
 
-    // 定时任务，每秒执行一次
-    @Scheduled(fixedRate = 1000)
+    // 定时任务，每20秒执行一次
+    @Scheduled(fixedRate = 20000)
     public void processTask() {
         // 判断中央空调是否开机
         if (centralUnitService.getById(1).getStatus().equals("off")) {
@@ -129,7 +129,7 @@ public class ScheduleTask {
                     controlLogService.addControlLog(room);
                     // 模拟时间片处理
                     try {
-                        Thread.sleep(FrequencyConstant.getTime()); // 时间片为10秒
+                        Thread.sleep(FrequencyConstant.getTime()); // 时间片为20秒
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
@@ -176,11 +176,12 @@ public class ScheduleTask {
     }
 
     //调整房间温度
+    //20s执行1次
     private Float setRoomTemp(Room room) {
         Float currentTemperature = room.getCurrentTemperature();
-        float high = 0.15f;
-        float medium = 0.1f;
-        float low = 0.05f;
+        float high = 1.5f;
+        float medium = 1f;
+        float low = 0.5f;
         if (Objects.equals(room.getMode(), "cooling")) {
             if (Objects.equals(room.getFanSpeed(), "high")) {
                 room.setCurrentTemperature(Math.max(currentTemperature - high, room.getTargetTemperature()));

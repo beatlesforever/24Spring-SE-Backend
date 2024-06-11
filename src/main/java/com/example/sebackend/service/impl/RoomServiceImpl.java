@@ -118,14 +118,13 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements IR
      *                               该参数不直接影响房间温度，而是作为调整目标温度的依据。
      */
     @Override
-    public void updateRoomTemperatures(float environmentTemperature) {
+    public void updateRoomTemperatures(float environmentTemperature,float temperatureChange) {
         // 获取所有房间列表
         List<Room> rooms = this.list();
         for (Room room : rooms) {
             // 判断房间当前状态是否为关闭或待机
             if ("off".equals(room.getStatus()) || "standby".equals(room.getStatus())) {
                 float currentTemp = room.getCurrentTemperature();
-                float temperatureChange = 0.1f;  // 设定温度变化的步长
 
                 // 判断房间当前温度与环境温度的关系，并相应调整
                 if (currentTemp < environmentTemperature) {

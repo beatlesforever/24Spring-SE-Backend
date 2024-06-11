@@ -9,6 +9,6 @@ public class FrequencyConstant {
     public static Integer frequency=2;
 
     @Getter
-    public static Integer Time=10000;//10s
+    public static Integer Time=20000;//20s
 
 }

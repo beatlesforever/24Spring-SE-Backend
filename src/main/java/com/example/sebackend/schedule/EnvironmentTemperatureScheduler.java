@@ -151,14 +151,14 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
      * 本方法不接受参数，也不返回任何值。
      * 利用定时任务框架（如Quartz或Spring的@Scheduled注解）每分钟调用以更新温度。
      */
-    @Scheduled(fixedRate = 20000) // 每20秒执行一次
+    @Scheduled(fixedRate = 10000) // 每10秒执行一次
     public void updateEnvironmentTemperature() {
-        float temperatureChange = 0.1f; // 每20秒温度变化量
+        float temperatureChange = 0.5f; // 每10秒温度变化量
 
         if (isSummerSeason) {
-            currentTemperature = Math.min(currentTemperature + temperatureChange, 50.0f); // 夏季温度上升，限制最高温度
+            currentTemperature = Math.min(currentTemperature + temperatureChange, 80.0f); // 夏季温度上升，限制最高温度
         } else {
-            currentTemperature = Math.max(currentTemperature - temperatureChange, -10.0f); // 冬季温度下降，限制最低温度
+            currentTemperature = Math.max(currentTemperature - temperatureChange, -40.0f); // 冬季温度下降，限制最低温度
         }
 
         // 更新全局环境温度变量
@@ -169,7 +169,7 @@ public class EnvironmentTemperatureScheduler implements InitializingBean {
         environmentTemperature.setTemperature(currentTemperature);
 
         // 更新所有房间的当前温度
-        roomService.updateRoomTemperatures(currentTemperature);
+        roomService.updateRoomTemperatures(currentTemperature, temperatureChange);
         log.info(String.format("环境温度为: %.1f", currentTemperature));
     }
 
