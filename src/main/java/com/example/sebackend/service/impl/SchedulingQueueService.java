@@ -63,4 +63,8 @@ public class SchedulingQueueService {
             }
         }
     }
+
+    public String getQueueSize() {
+        return String.valueOf(schedulingQueue.size());
+    }
 }

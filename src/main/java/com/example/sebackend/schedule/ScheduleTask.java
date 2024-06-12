@@ -96,15 +96,18 @@ public class ScheduleTask {
         }
     }
 
-    // 定时任务，每20秒执行一次
-    @Scheduled(fixedRate = 20000)
+
+
+
+    // 定时任务，每1秒扫描一次
+    @Scheduled(fixedRate = 1000)
     public void processTask() {
         // 判断中央空调是否开机
         if (centralUnitService.getById(1).getStatus().equals("off")) {
             log.info("中央空调未开机，跳过本次调度。");
             return;
         }
-
+        log.info("队列大小"+schedulingQueueService.getQueueSize());
         // 处理调度队列中的请求，最多处理三个线程
         for (int i = 0; i < 3 && !schedulingQueueService.isQueueEmpty(); i++) {
             Integer roomId = schedulingQueueService.removeFirstRoomFromQueue();
@@ -116,7 +119,7 @@ public class ScheduleTask {
             }
         }
     }
-
+    //按照时间片长度执行一次
     private void processRoomRequest(int roomId) {
         Room room = roomService.getById(roomId);
         if (room != null) {
