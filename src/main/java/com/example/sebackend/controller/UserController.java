@@ -36,7 +36,7 @@ public class UserController {
         User user = userService.login(loginuser.getUsername(), loginuser.getPassword());
         if (user != null) {
             // 验证房间号是否匹配
-            if (user.getRoomId().equals(loginuser.getRoomId())) {
+            if (user.getRole().equals("admin") || user.getRoomId().equals(loginuser.getRoomId())) {
                 // 登录成功，生成并返回JWT令牌
                 String token = JwtUtil.generateToken(user.getUsername(),user.getRole());
                 Map<String, Object> data = new HashMap<>();
